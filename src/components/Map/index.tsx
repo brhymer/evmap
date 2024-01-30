@@ -11,6 +11,7 @@ import MapContextProvider from './MapContextProvider'
 import useLeafletWindow from './useLeafletWindow'
 import useMapContext from './useMapContext'
 import useMarkerData from './useMarkerData'
+import useLeaflet from './useLeaflet'
 
 interface GeoJSONFeaturePropertiesPriority {
   CIscoreP: number;
@@ -27,16 +28,16 @@ interface GeoJSONFeaturePropertiesFeasible {
 }
 
 interface GeoJSONFeature {
-  type: string;
+  type: 'Feature';
   properties: GeoJSONFeaturePropertiesPriority | GeoJSONFeaturePropertiesFeasible;
   geometry: {
-    type: string;
-    coordinates: number[][][];
+    type: 'Polygon' | 'MultiPolygon';
+    coordinates: number[][][] | number[][][][];
   };
 }
 
 interface GeoJSONData {
-  type: string;
+  type: 'FeatureCollection';
   features: GeoJSONFeature[];
 }
 
@@ -55,7 +56,6 @@ const LocateButton = dynamic(async () => (await import('./ui/LocateButton')).Loc
 const LeafletMapContainer = dynamic(async () => (await import('./LeafletMapContainer')).LeafletMapContainer, {
   ssr: false,
 })
-
 const DynamicGeoJSON = dynamic(() => import('react-leaflet').then(mod => mod.GeoJSON), { ssr: false });
 
 const feasibleStyle = {
@@ -99,7 +99,7 @@ const MapInner = () => {
   const [ciScoreRange, setCiScoreRange] = useState([0, 100]);
   const [multiFaRange, setMultiFaRange] = useState([0, 100]);
   const [rentersRange, setRentersRange] = useState([0, 100]);
-  const [walkableRange, setWalkableRange] = useState([0, 10]);
+  const [walkableRange, setWalkableRange] = useState([5, 10]);
   const [drivableRange, setDrivableRange] = useState([0, 10]);
   const [neviChecked, setNeviChecked] = useState(false);
   const [pgeChecked, setPgeChecked] = useState(false);
@@ -142,13 +142,17 @@ const MapInner = () => {
     
     const fetchAndFilterData = async () => {
       try {
+        // Fetch and filter priority data
         const priorityResponse = await fetch('/priority.geojson');
-        const priorityDataJson = await priorityResponse.json();
-        setPriorityData(filterPriorityData(priorityDataJson));
+        const priorityDataJson: GeoJSONData = await priorityResponse.json();
+        const filteredPriorityData = filterPriorityData(priorityDataJson);
+        setPriorityData(filteredPriorityData);
 
+        // Fetch and filter feasible data
         const feasibleResponse = await fetch('/feasible.geojson');
-        const feasibleDataJson = await feasibleResponse.json();
-        setFeasibleData(filterFeasibleData(feasibleDataJson));
+        const feasibleDataJson: GeoJSONData = await feasibleResponse.json();
+        const filteredFeasibleData = filterFeasibleData(feasibleDataJson);
+        setFeasibleData(filteredFeasibleData);
       } catch (error) {
         console.error("Error fetching GeoJSON data:", error);
       }
@@ -173,6 +177,50 @@ const MapInner = () => {
     map.flyTo(allMarkersBoundCenter.centerPos, allMarkersBoundCenter.minZoom, { animate: false });
     map.once('moveend', moveEnd);
   }, [allMarkersBoundCenter, map]);
+
+  const L = useLeaflet();
+
+ // Add state variables to keep track of current layers
+const [priorityLayer, setPriorityLayer] = useState(null);
+const [feasibleLayer, setFeasibleLayer] = useState(null);
+
+useEffect(() => {
+  if (!map || !priorityData || !feasibleData || !L) return;
+
+  // Function to add a GeoJSON layer
+  const addGeoJsonLayer = (geoJsonData: GeoJSONData, style: L.PathOptions) => {
+    const layer = L.geoJSON(geoJsonData as any, { style });
+    layer.addTo(map);
+    return layer;
+  };
+
+  // Remove existing layers if they exist
+  if (priorityLayer) {
+    map.removeLayer(priorityLayer);
+    setPriorityLayer(null);
+  }
+  if (feasibleLayer) {
+    map.removeLayer(feasibleLayer);
+    setFeasibleLayer(null);
+  }
+
+  // Add new layers based on the filtered data
+  if (showPriorityData && priorityData) {
+    const newPriorityLayer = addGeoJsonLayer(priorityData, priorityStyle);
+    setPriorityLayer(newPriorityLayer);
+  }
+
+  if (showFeasibleData && feasibleData) {
+    const newFeasibleLayer = addGeoJsonLayer(feasibleData, feasibleStyle);
+    setFeasibleLayer(newFeasibleLayer);
+  }
+
+  // Cleanup function to remove layers when component unmounts
+  return () => {
+    if (priorityLayer) map.removeLayer(priorityLayer);
+    if (feasibleLayer) map.removeLayer(feasibleLayer);
+  };
+}, [map, priorityData, feasibleData, L, showPriorityData, showFeasibleData]);
 
   return (
     <div>
