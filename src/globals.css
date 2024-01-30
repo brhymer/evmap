@@ -79,3 +79,15 @@
 .map-controls label input[type="checkbox"] {
   margin-right: 5px;
 }
+
+.checkbox-group {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+.checkbox-column {
+  display: flex;
+  flex-direction: column;
+  margin-right: 20px;
+}
