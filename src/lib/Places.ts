@@ -50,44 +50,44 @@ export const Places: PlacesType = [
     position: [37.6897, -121.7897], // Livermore coordinates
     category: Category.CAT1,
   },
-  {
-    position: [37.8319, -122.2505], // Rockridge neighborhood
-    category: Category.CAT2,
-  },
-  {
-    position: [37.8005, -122.2361], // Grand Lake neighborhood
-    category: Category.CAT2,
-  },
-  {
-    position: [37.8464, -122.2858], // Temescal neighborhood
-    category: Category.CAT2,
-  },
-  {
-    position: [37.8108, -122.2292], // Piedmont Avenue neighborhood
-    category: Category.CAT2,
-  },
-  {
-    position: [37.8597, -122.2675], // Jingletown neighborhood
-    category: Category.CAT2,
-  },
-  {
-    position: [37.8094, -122.2492], // Lake Merritt neighborhood
-    category: Category.CAT2,
-  },
-  {
-    position: [37.8050, -122.2833], // Chinatown neighborhood
-    category: Category.CAT2,
-  },
-  {
-    position: [37.8542, -122.2825], // Temescal Telegraph neighborhood
-    category: Category.CAT2,
-  },
-  {
-    position: [37.7925, -122.2525], // Adams Point neighborhood
-    category: Category.CAT2,
-  },
-  {
-    position: [37.8425, -122.2258], // Glenview neighborhood
-    category: Category.CAT2,
-  },
+  // {
+  //   position: [37.8319, -122.2505], // Rockridge neighborhood
+  //   category: Category.CAT2,
+  // },
+  // {
+  //   position: [37.8005, -122.2361], // Grand Lake neighborhood
+  //   category: Category.CAT2,
+  // },
+  // {
+  //   position: [37.8464, -122.2858], // Temescal neighborhood
+  //   category: Category.CAT2,
+  // },
+  // {
+  //   position: [37.8108, -122.2292], // Piedmont Avenue neighborhood
+  //   category: Category.CAT2,
+  // },
+  // {
+  //   position: [37.8597, -122.2675], // Jingletown neighborhood
+  //   category: Category.CAT2,
+  // },
+  // {
+  //   position: [37.8094, -122.2492], // Lake Merritt neighborhood
+  //   category: Category.CAT2,
+  // },
+  // {
+  //   position: [37.8050, -122.2833], // Chinatown neighborhood
+  //   category: Category.CAT2,
+  // },
+  // {
+  //   position: [37.8542, -122.2825], // Temescal Telegraph neighborhood
+  //   category: Category.CAT2,
+  // },
+  // {
+  //   position: [37.7925, -122.2525], // Adams Point neighborhood
+  //   category: Category.CAT2,
+  // },
+  // {
+  //   position: [37.8425, -122.2258], // Glenview neighborhood
+  //   category: Category.CAT2,
+  // },
 ];   
