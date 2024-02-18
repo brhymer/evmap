@@ -73,7 +73,7 @@
 }
 
 .map-controls label {
-  margin-bottom: 40px; /* Adds space between each label */
+  margin-bottom: 20px; /* Adds space between each label */
 }
 
 .map-controls label input[type="checkbox"] {
@@ -83,11 +83,19 @@
 .checkbox-group {
   display: flex;
   justify-content: flex-start;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .checkbox-column {
   display: flex;
   flex-direction: column;
-  margin-right: 20px;
+  margin-right: 10px;
+}
+
+.points-of-interest {
+  margin-bottom: 20px;
+}
+
+.poi-checkbox {
+  margin-bottom: 10px;
 }
