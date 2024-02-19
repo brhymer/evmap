@@ -3,7 +3,7 @@
   "homepage": "https://typescript-next-leaflet-starter.vercel.app",
   "version": "0.1.1",
   "license": "MIT",
-  "author": "Richard Unterberg <https://github.com/richard-unterberg>",
+  "author": "Ankita Shanbhag <https://github.com/AnkitaShanbhag30>",
   "repository": {
     "type": "git",
     "url": "https://github.com/richard-unterberg/next-leaflet-starter-typescript/"
@@ -28,7 +28,8 @@
     "react-leaflet": "^4.2.1",
     "react-resize-detector": "^8.0.4",
     "react-slider": "^2.0.6",
-    "tailwindcss": "^3.2.6"
+    "tailwindcss": "^3.2.6",
+    "@turf/turf": "^6.5.0"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.2.0",

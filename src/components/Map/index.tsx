@@ -11,14 +11,14 @@ import useLeafletWindow from './useLeafletWindow'
 import useMapContext from './useMapContext'
 import useMarkerData from './useMarkerData'
 import useLeaflet from './useLeaflet'
-import { GeoJsonObject } from 'geojson'
+import * as turf from '@turf/turf';
+import { FeatureCollection, Polygon, MultiPolygon, GeoJsonObject } from 'geojson';
 import { GeoJSONData, LeafletMapContainer, CenterToMarkerButton, LocateButton, LeafletCluster, CustomMarker, DynamicGeoJSON, feasibleStyle, priorityStyle, GeoJSONFeature, GeoJSONFeaturePropertiesPriority, GeoJSONFeaturePropertiesFeasible } from './GeoJSONData'
 
 const MapInner = () => {
   const { map } = useMapContext()
   const L = useLeaflet();
   const leafletWindow = useLeafletWindow()
-
   const {
     width: viewportWidth,
     height: viewportHeight,
@@ -56,10 +56,11 @@ const MapInner = () => {
   const [healthcareFacilitiesData, setHealthcareFacilitiesData] = useState<GeoJSONData | null>(null);
 
   // Effects for fetching and filtering data
+  const cityBoundaryGeoJSON = useEffectFetchCityBoundary();
   useEffectSetLayerData();
-  useEffectSetTransitStopsLayerData();
-  useEffectSetParksAndRecreationLayerData();
-  useEffectSetHealthcareFacilitiesLayerData();
+  useEffectSetTransitStopsLayerData(cityBoundaryGeoJSON);
+  useEffectSetParksAndRecreationLayerData(cityBoundaryGeoJSON);
+  useEffectSetHealthcareFacilitiesLayerData(cityBoundaryGeoJSON);
   useEffectCenterMap();
   useEffectPriorityData();  
   useEffectFeasibleData();
@@ -310,6 +311,35 @@ const MapInner = () => {
   </div>
   return mapHtml;
 
+  function useEffectFetchCityBoundary() {
+    const [cityBoundaryGeoJSON, setCityBoundaryGeoJSON] = useState(null);
+  
+    useEffect(() => {
+      const fetchBoundaryData = async () => {
+        const boundaryData = await fetchCityBoundary(); 
+        setCityBoundaryGeoJSON(boundaryData);
+      };
+  
+      fetchBoundaryData();
+    }, []);
+  
+    return cityBoundaryGeoJSON;
+  }
+
+  async function fetchCityBoundary() {
+    try {
+      const cityBoundaryResponse = await fetch('/oakland_city_limits.geojson');
+      if (!cityBoundaryResponse.ok) {
+        throw new Error(`Error fetching city boundary: ${cityBoundaryResponse.statusText}`);
+      }
+      const cityBoundaryGeoJSON = await cityBoundaryResponse.json();
+      return cityBoundaryGeoJSON;
+    } catch (error) {
+      console.error("Could not fetch city boundary:", error);
+      return null;
+    }
+  }  
+
   function useEffectSetLayerData() {
     useEffect(() => {
       const filterPriorityData = (data: GeoJSONData) => {
@@ -366,66 +396,89 @@ const MapInner = () => {
       neviOption, pgeOption, commercialOption
     ])
   }
-  function useEffectSetTransitStopsLayerData() {
+  
+  function useEffectSetTransitStopsLayerData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
     useEffect(() => {
       const fetchAndFilterTransitStopsData = async () => {
         try {
-          // Fetch transit stops data
-          const transitStopsResponse = await fetch('./transit_stops.geojson')
-          const transitStopsDataJson = await transitStopsResponse.json()
-          console.log(transitStopsDataJson)
-          setShowTransitStops(showTransitStops)
-          setTransitStopsData(transitStopsDataJson)
+          if (cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0) {
+            const transitStopsResponse = await fetch('./transit_stops.geojson');
+            let transitStopsDataJson = await transitStopsResponse.json();
+  
+            transitStopsDataJson = {
+              ...transitStopsDataJson,
+              features: transitStopsDataJson.features.filter((feature: { geometry: turf.Coord }) => {
+                const cityBoundaryFeature = cityBoundaryGeoJSON.features[0];
+                return turf.booleanPointInPolygon(feature.geometry, cityBoundaryFeature.geometry);
+              }),
+            };
+  
+            console.log(transitStopsDataJson);
+            setShowTransitStops(showTransitStops);
+            setTransitStopsData(transitStopsDataJson);
+          }
         } catch (error) {
-          console.error("Error fetching GeoJSON data:", error)
+          console.error("Error fetching GeoJSON data:", error);
         }
-      }
-      fetchAndFilterTransitStopsData()
-    }, [
-      showTransitStops
-    ])
+      };
+      fetchAndFilterTransitStopsData();
+    }, [showTransitStops, cityBoundaryGeoJSON]);
   }
-
-  function useEffectSetParksAndRecreationLayerData() {
+  
+  function useEffectSetParksAndRecreationLayerData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
     useEffect(() => {
       const fetchAndFilterParksAndRecreationData = async () => {
         try {
-          // Fetch parks and recreation data
-          const parksAndRecreationResponse = await fetch('./parks_recreation.geojson')
-          const parksAndRecreationDataJson = await parksAndRecreationResponse.json()
-          console.log(parksAndRecreationDataJson)
-          setShowParksAndRecreation(showParksAndRecreation)
-          setParksAndRecreationData(parksAndRecreationDataJson)
-
+          if (cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0) {
+            const parksAndRecreationResponse = await fetch('./parks_recreation.geojson');
+            let parksAndRecreationDataJson = await parksAndRecreationResponse.json();
+  
+            parksAndRecreationDataJson = {
+              ...parksAndRecreationDataJson,
+              features: parksAndRecreationDataJson.features.filter((feature: { geometry: turf.Coord }) => {
+                const cityBoundaryFeature = cityBoundaryGeoJSON.features[0];
+                return turf.booleanPointInPolygon(feature.geometry, cityBoundaryFeature.geometry);
+              }),
+            };
+  
+            console.log(parksAndRecreationDataJson);
+            setShowParksAndRecreation(showParksAndRecreation);
+            setParksAndRecreationData(parksAndRecreationDataJson);
+          }
         } catch (error) {
-          console.error("Error fetching GeoJSON data:", error)
+          console.error("Error fetching GeoJSON data:", error);
         }
-      }
-      fetchAndFilterParksAndRecreationData()
-    }, [
-      showParksAndRecreation
-    ])
-  }
+      };
+      fetchAndFilterParksAndRecreationData();
+    }, [showParksAndRecreation, cityBoundaryGeoJSON]);
+  }  
 
-  function useEffectSetHealthcareFacilitiesLayerData() {
+  function useEffectSetHealthcareFacilitiesLayerData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
     useEffect(() => {
       const fetchAndFilterHealthcareFacilitiesData = async () => {
         try {
-          // Fetch healthcare facilities data
-          const healthcareFacilitiesResponse = await fetch('./healthcare_facilities.geojson')
-          const healthcareFacilitiesDataJson = await healthcareFacilitiesResponse.json()
-          console.log(healthcareFacilitiesDataJson)
-          setShowHealthcareFacilities(showHealthcareFacilities)
-          setHealthcareFacilitiesData(healthcareFacilitiesDataJson)
-
+          if (cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0) {
+            const healthcareFacilitiesResponse = await fetch('./healthcare_facilities.geojson');
+            let healthcareFacilitiesDataJson = await healthcareFacilitiesResponse.json();
+  
+            healthcareFacilitiesDataJson = {
+              ...healthcareFacilitiesDataJson,
+              features: healthcareFacilitiesDataJson.features.filter((feature: { geometry: turf.Coord }) => {
+                const cityBoundaryFeature = cityBoundaryGeoJSON.features[0];
+                return turf.booleanPointInPolygon(feature.geometry, cityBoundaryFeature.geometry);
+              }),
+            };
+  
+            console.log(healthcareFacilitiesDataJson);
+            setShowHealthcareFacilities(showHealthcareFacilities);
+            setHealthcareFacilitiesData(healthcareFacilitiesDataJson);
+          }
         } catch (error) {
-          console.error("Error fetching GeoJSON data:", error)
+          console.error("Error fetching GeoJSON data:", error);
         }
-      }
-      fetchAndFilterHealthcareFacilitiesData()
-    }, [
-      showHealthcareFacilities
-    ])
+      };
+      fetchAndFilterHealthcareFacilitiesData();
+    }, [showHealthcareFacilities, cityBoundaryGeoJSON]);
   }
 
   function useEffectCenterMap() {
@@ -528,8 +581,8 @@ const MapInner = () => {
 
       if (showTransitStops) {
         const transitStopsIcon = L.icon({
-          iconUrl: 'bench.png',
-          iconSize: [32, 32],
+          iconUrl: 'vehicles.png',
+          iconSize: [16, 16],
           iconAnchor: [22, 94],
           popupAnchor: [-3, -76]
         })
@@ -567,7 +620,7 @@ const MapInner = () => {
       if (showParksAndRecreation) {
         const parksAndRecreationIcon = L.icon({
           iconUrl: 'bench.png',
-          iconSize: [32, 32],
+          iconSize: [16, 16],
           iconAnchor: [22, 94],
           popupAnchor: [-3, -76]
         })
@@ -605,7 +658,7 @@ const MapInner = () => {
       if (showHealthcareFacilities) {
         const healthcareFacilitiesIcon = L.icon({
           iconUrl: 'first-aid-kit.png',
-          iconSize: [32, 32],
+          iconSize: [16, 16],
           iconAnchor: [22, 94],
           popupAnchor: [-3, -76]
         })
