@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useResizeDetector } from 'react-resize-detector'
 import Slider from 'react-slider'
 
@@ -12,7 +12,7 @@ import useMapContext from './useMapContext'
 import useMarkerData from './useMarkerData'
 import useLeaflet from './useLeaflet'
 import * as turf from '@turf/turf';
-import { FeatureCollection, Polygon, MultiPolygon, GeoJsonObject } from 'geojson';
+import { FeatureCollection, Point, Polygon, MultiPolygon, GeoJsonObject } from 'geojson';
 import { GeoJSONData, LeafletMapContainer, CenterToMarkerButton, LocateButton, LeafletCluster, CustomMarker, DynamicGeoJSON, feasibleStyle, priorityStyle, GeoJSONFeature, GeoJSONFeaturePropertiesPriority, GeoJSONFeaturePropertiesFeasible } from './GeoJSONData'
 
 const MapInner = () => {
@@ -57,7 +57,7 @@ const MapInner = () => {
 
   // Effects for fetching and filtering data
   const cityBoundaryGeoJSON = useEffectFetchCityBoundary();
-  useEffectSetLayerData();
+  useEffectSetLayerData(cityBoundaryGeoJSON);
   useEffectSetTransitStopsLayerData(cityBoundaryGeoJSON);
   useEffectSetParksAndRecreationLayerData(cityBoundaryGeoJSON);
   useEffectSetHealthcareFacilitiesLayerData(cityBoundaryGeoJSON);
@@ -339,63 +339,92 @@ const MapInner = () => {
       return null;
     }
   }  
+  
+  function useEffectSetLayerData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
+      useEffect(() => {
+        function filterPriorityData(data: GeoJSONData, cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null): GeoJSONData {
+          const cityBoundaryFeature = cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0
+            ? cityBoundaryGeoJSON.features[0].geometry
+            : null;
 
-  function useEffectSetLayerData() {
-    useEffect(() => {
-      const filterPriorityData = (data: GeoJSONData) => {
-        return {
-          ...data,
-          features: data.features.filter((feature: GeoJSONFeature) => {
-            const props = feature.properties as GeoJSONFeaturePropertiesPriority
-            return (
-              props.CIscoreP >= ciScoreRange[0] && props.CIscoreP <= ciScoreRange[1] &&
-              props['# Multi-Fa'] >= multiFaRange[0] && props['# Multi-Fa'] <= multiFaRange[1] &&
-              props['# Renters'] >= rentersRange[0] && props['# Renters'] <= rentersRange[1] &&
-              props.walkable >= walkableRange[0] && props.walkable <= walkableRange[1] &&
-              props.drivable >= drivableRange[0] && props.drivable <= drivableRange[1]
-            )
-          })
+          return {
+            ...data,
+            features: data.features.filter((feature: GeoJSONFeature) => {
+              const props = feature.properties as GeoJSONFeaturePropertiesPriority;
+              const withinPropertyCriteria = props.CIscoreP >= ciScoreRange[0] && props.CIscoreP <= ciScoreRange[1] &&
+                props['# Multi-Fa'] >= multiFaRange[0] && props['# Multi-Fa'] <= multiFaRange[1] &&
+                props['# Renters'] >= rentersRange[0] && props['# Renters'] <= rentersRange[1] &&
+                props.walkable >= walkableRange[0] && props.walkable <= walkableRange[1] &&
+                props.drivable >= drivableRange[0] && props.drivable <= drivableRange[1];
+
+              if (!withinPropertyCriteria) return false;
+
+              if (cityBoundaryFeature) {
+                if (feature.geometry.type === 'Point') {
+                  return turf.booleanPointInPolygon(feature.geometry as unknown as Point, cityBoundaryFeature);
+                } else if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+                  const featureGeom = turf.feature(feature.geometry);
+                  return turf.booleanOverlap(featureGeom, cityBoundaryFeature) ||
+                    turf.booleanContains(cityBoundaryFeature, featureGeom) ||
+                    turf.booleanWithin(featureGeom, cityBoundaryFeature);
+                }
+                return false;
+              }
+              return true;
+            })
+          };
         }
-      }
 
-      const filterFeasibleData = (data: GeoJSONData) => {
-        return {
-          ...data,
-          features: data.features.filter((feature: GeoJSONFeature) => {
-            const props = feature.properties as GeoJSONFeaturePropertiesFeasible
-            return (
-              ((neviOption.zero && props.nevi === 0) || (neviOption.one && props.nevi === 1)) &&
-              ((pgeOption.zero && props.pge === 0) || (pgeOption.one && props.pge === 1)) &&
-              ((commercialOption.zero && props.commercial === 0) || (commercialOption.one && props.commercial === 1))
-            )
-          })
+        function filterFeasibleData(data: GeoJSONData, cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null): GeoJSONData {
+          const cityBoundaryFeature = cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0
+            ? cityBoundaryGeoJSON.features[0].geometry
+            : null;
+        
+          return {
+            ...data,
+            features: data.features.filter((feature: GeoJSONFeature) => {
+              const props = feature.properties as GeoJSONFeaturePropertiesFeasible;
+              const meetsPropertyCriteria = (
+                ((neviOption.zero && props.nevi === 0) || (neviOption.one && props.nevi === 1)) &&
+                ((pgeOption.zero && props.pge === 0) || (pgeOption.one && props.pge === 1)) &&
+                ((commercialOption.zero && props.commercial === 0) || (commercialOption.one && props.commercial === 1))
+              );
+        
+              if (!meetsPropertyCriteria) return false;
+        
+              if (cityBoundaryFeature && feature.geometry.type === 'Point') {
+                return turf.booleanPointInPolygon(feature.geometry as unknown as Point, cityBoundaryFeature);
+              }
+        
+              return true;
+            })
+          };
         }
-      }
 
-      const fetchAndFilterData = async () => {
-        try {
-          // Fetch and filter priority data
-          const priorityResponse = await fetch('/priority.geojson')
-          const priorityDataJson: GeoJSONData = await priorityResponse.json()
-          const filteredPriorityData = filterPriorityData(priorityDataJson)
-          setPriorityData(filteredPriorityData)
-
-          // Fetch and filter feasible data
-          const feasibleResponse = await fetch('/feasible.geojson')
-          const feasibleDataJson: GeoJSONData = await feasibleResponse.json()
-          const filteredFeasibleData = filterFeasibleData(feasibleDataJson)
-          setFeasibleData(filteredFeasibleData)
-
-        } catch (error) {
-          console.error("Error fetching GeoJSON data:", error)
+        const fetchAndFilterData = async () => {
+          try {
+            // Fetch and filter priority data
+            const priorityResponse = await fetch('/priority.geojson')
+            const priorityDataJson: GeoJSONData = await priorityResponse.json()
+            const filteredPriorityData = filterPriorityData(priorityDataJson, cityBoundaryGeoJSON)
+            setPriorityData(filteredPriorityData)
+  
+            // Fetch and filter feasible data
+            const feasibleResponse = await fetch('/feasible.geojson')
+            const feasibleDataJson: GeoJSONData = await feasibleResponse.json()
+            const filteredFeasibleData = filterFeasibleData(feasibleDataJson, cityBoundaryGeoJSON)
+            setFeasibleData(filteredFeasibleData)
+  
+          } catch (error) {
+            console.error("Error fetching GeoJSON data:", error)
+          }
         }
-      }
-      fetchAndFilterData()
-    }, [
-      ciScoreRange, multiFaRange, rentersRange, walkableRange, drivableRange,
-      neviOption, pgeOption, commercialOption
-    ])
-  }
+        fetchAndFilterData()
+      }, [
+        ciScoreRange, multiFaRange, rentersRange, walkableRange, drivableRange,
+        neviOption, pgeOption, commercialOption
+      ])
+  }  
   
   function useEffectSetTransitStopsLayerData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
     useEffect(() => {
@@ -583,8 +612,8 @@ const MapInner = () => {
         const transitStopsIcon = L.icon({
           iconUrl: 'vehicles.png',
           iconSize: [16, 16],
-          iconAnchor: [22, 94],
-          popupAnchor: [-3, -76]
+          iconAnchor: [0, 0],
+          popupAnchor: [0, 0]
         })
         if (!transitStopsLayerGroup) {
           transitStopsLayerGroup = new L.LayerGroup().addTo(map);
@@ -621,8 +650,8 @@ const MapInner = () => {
         const parksAndRecreationIcon = L.icon({
           iconUrl: 'bench.png',
           iconSize: [16, 16],
-          iconAnchor: [22, 94],
-          popupAnchor: [-3, -76]
+          iconAnchor: [0, 0],
+          popupAnchor: [0, 0]
         })
         if (!parksAndRecreationLayerGroup) {
           parksAndRecreationLayerGroup = new L.LayerGroup().addTo(map);
@@ -659,8 +688,8 @@ const MapInner = () => {
         const healthcareFacilitiesIcon = L.icon({
           iconUrl: 'first-aid-kit.png',
           iconSize: [16, 16],
-          iconAnchor: [22, 94],
-          popupAnchor: [-3, -76]
+          iconAnchor: [0, 0],
+          popupAnchor: [0, 0]
         })
         if (!healthcareFacilitiesLayerGroup) {
           healthcareFacilitiesLayerGroup = new L.LayerGroup().addTo(map);
