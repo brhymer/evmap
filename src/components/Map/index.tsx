@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useResizeDetector } from 'react-resize-detector'
-import Slider from 'react-slider'
+import "react-toggle/style.css"; 
+import settingsIcon from './settings.svg';
 
 import MapTopBar from '@components/TopBar'
 import { AppConfig } from '@lib/AppConfig'
@@ -11,43 +12,61 @@ import useLeafletWindow from './useLeafletWindow'
 import useMapContext from './useMapContext'
 import useMarkerData from './useMarkerData'
 import useLeaflet from './useLeaflet'
+import LayerIntersection from './LayerIntersection';
+import { DataControls } from './DataControls';
+import ConfigurationPanel from './ConfigurationPanel';
 import * as turf from '@turf/turf';
-import { FeatureCollection, Point, Polygon, MultiPolygon, GeoJsonObject } from 'geojson';
-import { GeoJSONData, LeafletMapContainer, CenterToMarkerButton, LocateButton, LeafletCluster, CustomMarker, DynamicGeoJSON, feasibleStyle, priorityStyle, GeoJSONFeature, GeoJSONFeaturePropertiesPriority, GeoJSONFeaturePropertiesFeasible } from './GeoJSONData'
+import { FeatureCollection, Polygon, MultiPolygon, GeoJsonProperties } from 'geojson';
+import { GeoJSONData, LeafletMapContainer, CenterToMarkerButton, LocateButton, LeafletCluster, CustomMarker } from './GeoJSONData'
 
-const MapInner = () => {
-  const { map } = useMapContext()
+export type Range = [number, number];
+
+interface UseLayerGroupEffectParams {
+  map: any;
+  data: GeoJSONData | null;
+  showLayer: boolean;
+  layerGroupName: string;
+  iconUrl: string;
+}
+
+export type DataConfig = {
+  togglePopRange: boolean;
+  toggleCiRange: boolean;
+  toggleLevRange: boolean;
+  toggleMultiFaRange: boolean;
+  toggleRentersRange: boolean;
+  toggleWalkableRange: boolean;
+  toggleDrivableRange: boolean;
+  toggleCommercialRange: boolean;
+  toggleResidentialRange: boolean;
+  toggleNeviFilterActive: boolean;
+  togglePgeFilterActive: boolean;
+};
+
+function MapInner(): JSX.Element {
+  const [showIntersection, setShowIntersection] = useState(false);
+  const [setIntersectionData] = useState<FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null>(null);
+  const [priorityData, setPriorityData] = useState<FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null>(null);
+  const [feasibleData, setFeasibleData] = useState<FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null>(null);
+  const { map } = useMapContext();
   const L = useLeaflet();
-  const leafletWindow = useLeafletWindow()
+  const leafletWindow = useLeafletWindow();
   const {
-    width: viewportWidth,
-    height: viewportHeight,
-    ref: viewportRef,
+    width: viewportWidth, height: viewportHeight, ref: viewportRef,
   } = useResizeDetector({
     refreshMode: 'debounce',
     refreshRate: 200,
-  })
+  });
 
   const { clustersByCategory, allMarkersBoundCenter } = useMarkerData({
     locations: Places,
     map,
     viewportWidth,
     viewportHeight,
-  })
+  });
 
-  const isLoading = !map || !leafletWindow || !viewportWidth || !viewportHeight
-  const [priorityData, setPriorityData] = useState<GeoJSONData | null>(null);
-  const [feasibleData, setFeasibleData] = useState<GeoJSONData | null>(null);
-  const [showPriorityData] = useState(true);
-  const [showFeasibleData] = useState(true);
-  const [ciScoreRange, setCiScoreRange] = useState([0, 0]);
-  const [multiFaRange, setMultiFaRange] = useState([0, 0]);
-  const [rentersRange, setRentersRange] = useState([0, 0]);
-  const [walkableRange, setWalkableRange] = useState([0, 0]);
-  const [drivableRange, setDrivableRange] = useState([0, 0]);
-  const [neviOption, setNeviOption] = useState({ zero: false, one: false });
-  const [pgeOption, setPgeOption] = useState({ zero: false, one: false });
-  const [commercialOption, setCommercialOption] = useState({ zero: false, one: false });
+  const isLoading = !map || !leafletWindow || !viewportWidth || !viewportHeight;
+
   const [showTransitStops, setShowTransitStops] = useState(false);
   const [transitStopsData, setTransitStopsData] = useState<GeoJSONData | null>(null);
   const [showParksAndRecreation, setShowParksAndRecreation] = useState(false);
@@ -55,179 +74,81 @@ const MapInner = () => {
   const [showHealthcareFacilities, setShowHealthcareFacilities] = useState(false);
   const [healthcareFacilitiesData, setHealthcareFacilitiesData] = useState<GeoJSONData | null>(null);
 
-  // Effects for fetching and filtering data
+  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
+  const [priorityDataConfig, setPriorityDataConfig] = useState<DataConfig>({
+    togglePopRange: true,
+    toggleCiRange: true,
+    toggleLevRange: true,
+    toggleMultiFaRange: true,
+    toggleRentersRange: true,
+    toggleWalkableRange: true,
+    toggleDrivableRange: true,
+    toggleCommercialRange: false,
+    toggleResidentialRange: false,
+    toggleNeviFilterActive: false,
+    togglePgeFilterActive: false,
+});
+  const [feasibleDataConfig, setFeasibleDataConfig] = useState<DataConfig>({
+    togglePopRange: false,
+    toggleCiRange: false,
+    toggleLevRange: false,
+    toggleMultiFaRange: false,
+    toggleRentersRange: false,
+    toggleWalkableRange: false,
+    toggleDrivableRange: false,
+    toggleCommercialRange: true,
+    toggleResidentialRange: true,
+    toggleNeviFilterActive: true,
+    togglePgeFilterActive: true, 
+  });
+
   const cityBoundaryGeoJSON = useEffectFetchCityBoundary();
-  useEffectSetLayerData(cityBoundaryGeoJSON);
-  useEffectSetTransitStopsLayerData(cityBoundaryGeoJSON);
-  useEffectSetParksAndRecreationLayerData(cityBoundaryGeoJSON);
-  useEffectSetHealthcareFacilitiesLayerData(cityBoundaryGeoJSON);
+  useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON });
+  useEffectSetParksAndRecreationLayerData({ cityBoundaryGeoJSON });
+  useEffectSetHealthcareFacilitiesLayerData({ cityBoundaryGeoJSON });
   useEffectCenterMap();
-  useEffectPriorityData();  
-  useEffectFeasibleData();
   useEffectTransitStops();
   useEffectParksAndRecreation();
-  useEffectHealthCareFacilities(); 
+  useEffectHealthCareFacilities();
 
   const mapHtml = <div>
     <div className="map-controls">
-      {/* Priority Data Checkbox */}
-      <label>
-        {/* <input
-      type="checkbox"
-      checked={showPriorityData}
-      onChange={() => setShowPriorityData(!showPriorityData)}
-    /> */}
-        <b>Priority Data</b>
-      </label>
-      {showPriorityData && (
-        <>
-          {/* CI Score Slider */}
-          <label>
-            CI Score: {ciScoreRange[0]} to {ciScoreRange[1]}
-            <Slider
-              min={0}
-              max={100}
-              value={ciScoreRange}
-              onChange={setCiScoreRange}
-              thumbClassName="slider-thumb"
-              trackClassName="slider-track"
-              renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
-              pearling
-              minDistance={5} />
-          </label>
-          {/* Multi-Fa Slider */}
-          <label>
-            # Multi-Fa: {multiFaRange[0]} to {multiFaRange[1]}
-            <Slider
-              min={0}
-              max={100}
-              value={multiFaRange}
-              onChange={setMultiFaRange}
-              thumbClassName="slider-thumb"
-              trackClassName="slider-track"
-              renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
-              pearling
-              minDistance={5} />
-          </label>
-          {/* Renters Slider */}
-          <label>
-            # Renters: {rentersRange[0]} to {rentersRange[1]}
-            <Slider
-              min={0}
-              max={100}
-              value={rentersRange}
-              onChange={setRentersRange}
-              thumbClassName="slider-thumb"
-              trackClassName="slider-track"
-              renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
-              pearling
-              minDistance={5} />
-          </label>
-          {/* Walkable Slider */}
-          <label>
-            Walkable: {walkableRange[0]} to {walkableRange[1]}
-            <Slider
-              min={0}
-              max={100}
-              value={walkableRange}
-              onChange={setWalkableRange}
-              thumbClassName="slider-thumb"
-              trackClassName="slider-track"
-              renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
-              pearling
-              minDistance={5} />
-          </label>
-          {/* Drivable Slider */}
-          <label>
-            Drivable: {drivableRange[0]} to {drivableRange[1]}
-            <Slider
-              min={0}
-              max={100}
-              value={drivableRange}
-              onChange={setDrivableRange}
-              thumbClassName="slider-thumb"
-              trackClassName="slider-track"
-              renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
-              pearling
-              minDistance={5} />
-          </label>
-        </>
+      <button onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)}>
+        <img src='./settings.png' className='settings-icon'></img>
+      </button>
+
+      {isConfigPanelOpen && (
+        <ConfigurationPanel
+          priorityDataConfig={priorityDataConfig}
+          feasibleDataConfig={feasibleDataConfig}
+          setPriorityDataConfig={setPriorityDataConfig}
+          setFeasibleDataConfig={setFeasibleDataConfig}
+          closePanel={function (): void {
+            setIsConfigPanelOpen(false);
+          } 
+        }/>
       )}
+      <DataControls
+        dataControlsTitle="Priority Data"
+        map={map}
+        L={L}
+        cityBoundaryGeoJSON={cityBoundaryGeoJSON}
+        color='#3388ff'
+        geojsonUrl='/oakland_priority.geojson'
+        onDataUpdate={setPriorityData} 
+        config={priorityDataConfig}
+      />
+      <DataControls
+        dataControlsTitle="Feasible Data"
+        map={map}
+        L={L}
+        cityBoundaryGeoJSON={cityBoundaryGeoJSON}
+        color="#ffa500"
+        geojsonUrl='/oakland_priority.geojson'
+        onDataUpdate={setFeasibleData} 
+        config={feasibleDataConfig}
+      />
       <br />
-
-      {/* Feasible Data Checkbox */}
-      <label>
-        {/* <input
-      type="checkbox"
-      checked={showFeasibleData}
-      onChange={() => setShowFeasibleData(!showFeasibleData)}
-    /> */}
-        <b>Feasible Data</b>
-      </label>
-      {showFeasibleData && (
-        <>
-          <div className="checkbox-group">
-            {/* NEVI Checkboxes */}
-            <div className="checkbox-column">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={neviOption.zero}
-                  onChange={() => setNeviOption({ ...neviOption, zero: !neviOption.zero })} />
-                NEVI 0
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={neviOption.one}
-                  onChange={() => setNeviOption({ ...neviOption, one: !neviOption.one })} />
-                NEVI 1
-              </label>
-            </div>
-          </div>
-
-          <div className="checkbox-group">
-            {/* PGE Checkboxes */}
-            <div className="checkbox-column">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={pgeOption.zero}
-                  onChange={() => setPgeOption({ ...pgeOption, zero: !pgeOption.zero })} />
-                PGE 0
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={pgeOption.one}
-                  onChange={() => setPgeOption({ ...pgeOption, one: !pgeOption.one })} />
-                PGE 1
-              </label>
-            </div>
-          </div>
-
-          <div className="checkbox-group">
-            {/* Commercial Checkboxes */}
-            <div className="checkbox-column">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={commercialOption.zero}
-                  onChange={() => setCommercialOption({ ...commercialOption, zero: !commercialOption.zero })} />
-                Commercial 0
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={commercialOption.one}
-                  onChange={() => setCommercialOption({ ...commercialOption, one: !commercialOption.one })} />
-                Commercial 1
-              </label>
-            </div>
-          </div>
-        </>
-      )}
-      {/* Points of Interest Section */}
       <label>
         <b>Points of Interest</b>
       </label>
@@ -245,7 +166,7 @@ const MapInner = () => {
               type="checkbox"
               checked={showParksAndRecreation}
               onChange={() => setShowParksAndRecreation(!showParksAndRecreation)} />
-            Parks and Recreation
+            City/County Parks
           </label>
           <label>
             <input
@@ -256,6 +177,24 @@ const MapInner = () => {
           </label>
         </div>
       </div>
+      {/* <label>
+        <input
+          type="checkbox"
+          checked={showIntersection}
+          onChange={() => setShowIntersection(!showIntersection)}
+        />
+        Show Computed Intersection
+      </label>
+
+      {showIntersection && map && priorityData && feasibleData && (
+        <LayerIntersection
+          map={map}
+          priorityData={priorityData}
+          feasibleData={feasibleData}
+          onIntersectionChange={setIntersectionData}
+          showIntersection={true}
+        />
+      )} */}
     </div>
     <div className="h-full w-full absolute overflow-hidden" ref={viewportRef}>
       <MapTopBar />
@@ -296,9 +235,6 @@ const MapInner = () => {
                     ))}
                   </LeafletCluster>
                 ))}
-                {/* GeoJSON layers */}
-                {showFeasibleData && feasibleData && <DynamicGeoJSON data={feasibleData} style={feasibleStyle} />}
-                {showPriorityData && priorityData && <DynamicGeoJSON data={priorityData} style={priorityStyle} />}
               </>
             ) : (
               // eslint-disable-next-line react/jsx-no-useless-fragment
@@ -308,25 +244,25 @@ const MapInner = () => {
         )}
       </div>
     </div>
-  </div>
+  </div>;
   return mapHtml;
 
-  function useEffectFetchCityBoundary() {
+  function useEffectFetchCityBoundary(): null {
     const [cityBoundaryGeoJSON, setCityBoundaryGeoJSON] = useState(null);
-  
+
     useEffect(() => {
       const fetchBoundaryData = async () => {
-        const boundaryData = await fetchCityBoundary(); 
+        const boundaryData = await fetchCityBoundary();
         setCityBoundaryGeoJSON(boundaryData);
       };
-  
+
       fetchBoundaryData();
     }, []);
-  
+
     return cityBoundaryGeoJSON;
   }
 
-  async function fetchCityBoundary() {
+  async function fetchCityBoundary(): Promise<any> {
     try {
       const cityBoundaryResponse = await fetch('/oakland_city_limits.geojson');
       if (!cityBoundaryResponse.ok) {
@@ -338,385 +274,140 @@ const MapInner = () => {
       console.error("Could not fetch city boundary:", error);
       return null;
     }
-  }  
-  
-  function useEffectSetLayerData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
-      useEffect(() => {
-        function filterPriorityData(data: GeoJSONData, cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null): GeoJSONData {
-          const cityBoundaryFeature = cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0
-            ? cityBoundaryGeoJSON.features[0].geometry
-            : null;
-
-          return {
-            ...data,
-            features: data.features.filter((feature: GeoJSONFeature) => {
-              const props = feature.properties as GeoJSONFeaturePropertiesPriority;
-              const withinPropertyCriteria = props.CIscoreP >= ciScoreRange[0] && props.CIscoreP <= ciScoreRange[1] &&
-                props['# Multi-Fa'] >= multiFaRange[0] && props['# Multi-Fa'] <= multiFaRange[1] &&
-                props['# Renters'] >= rentersRange[0] && props['# Renters'] <= rentersRange[1] &&
-                props.walkable >= walkableRange[0] && props.walkable <= walkableRange[1] &&
-                props.drivable >= drivableRange[0] && props.drivable <= drivableRange[1];
-
-              if (!withinPropertyCriteria) return false;
-
-              if (cityBoundaryFeature) {
-                if (feature.geometry.type === 'Point') {
-                  return turf.booleanPointInPolygon(feature.geometry as unknown as Point, cityBoundaryFeature);
-                } else if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
-                  const featureGeom = turf.feature(feature.geometry);
-                  return turf.booleanOverlap(featureGeom, cityBoundaryFeature) ||
-                    turf.booleanContains(cityBoundaryFeature, featureGeom) ||
-                    turf.booleanWithin(featureGeom, cityBoundaryFeature);
-                }
-                return false;
-              }
-              return true;
-            })
-          };
-        }
-
-        function filterFeasibleData(data: GeoJSONData, cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null): GeoJSONData {
-          const cityBoundaryFeature = cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0
-            ? cityBoundaryGeoJSON.features[0].geometry
-            : null;
-        
-          return {
-            ...data,
-            features: data.features.filter((feature: GeoJSONFeature) => {
-              const props = feature.properties as GeoJSONFeaturePropertiesFeasible;
-              const meetsPropertyCriteria = (
-                ((neviOption.zero && props.nevi === 0) || (neviOption.one && props.nevi === 1)) &&
-                ((pgeOption.zero && props.pge === 0) || (pgeOption.one && props.pge === 1)) &&
-                ((commercialOption.zero && props.commercial === 0) || (commercialOption.one && props.commercial === 1))
-              );
-        
-              if (!meetsPropertyCriteria) return false;
-        
-              if (cityBoundaryFeature && feature.geometry.type === 'Point') {
-                return turf.booleanPointInPolygon(feature.geometry as unknown as Point, cityBoundaryFeature);
-              }
-        
-              return true;
-            })
-          };
-        }
-
-        const fetchAndFilterData = async () => {
-          try {
-            // Fetch and filter priority data
-            const priorityResponse = await fetch('/priority.geojson')
-            const priorityDataJson: GeoJSONData = await priorityResponse.json()
-            const filteredPriorityData = filterPriorityData(priorityDataJson, cityBoundaryGeoJSON)
-            setPriorityData(filteredPriorityData)
-  
-            // Fetch and filter feasible data
-            const feasibleResponse = await fetch('/feasible.geojson')
-            const feasibleDataJson: GeoJSONData = await feasibleResponse.json()
-            const filteredFeasibleData = filterFeasibleData(feasibleDataJson, cityBoundaryGeoJSON)
-            setFeasibleData(filteredFeasibleData)
-  
-          } catch (error) {
-            console.error("Error fetching GeoJSON data:", error)
-          }
-        }
-        fetchAndFilterData()
-      }, [
-        ciScoreRange, multiFaRange, rentersRange, walkableRange, drivableRange,
-        neviOption, pgeOption, commercialOption
-      ])
-  }  
-  
-  function useEffectSetTransitStopsLayerData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
-    useEffect(() => {
-      const fetchAndFilterTransitStopsData = async () => {
-        try {
-          if (cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0) {
-            const transitStopsResponse = await fetch('./transit_stops.geojson');
-            let transitStopsDataJson = await transitStopsResponse.json();
-  
-            transitStopsDataJson = {
-              ...transitStopsDataJson,
-              features: transitStopsDataJson.features.filter((feature: { geometry: turf.Coord }) => {
-                const cityBoundaryFeature = cityBoundaryGeoJSON.features[0];
-                return turf.booleanPointInPolygon(feature.geometry, cityBoundaryFeature.geometry);
-              }),
-            };
-  
-            console.log(transitStopsDataJson);
-            setShowTransitStops(showTransitStops);
-            setTransitStopsData(transitStopsDataJson);
-          }
-        } catch (error) {
-          console.error("Error fetching GeoJSON data:", error);
-        }
-      };
-      fetchAndFilterTransitStopsData();
-    }, [showTransitStops, cityBoundaryGeoJSON]);
-  }
-  
-  function useEffectSetParksAndRecreationLayerData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
-    useEffect(() => {
-      const fetchAndFilterParksAndRecreationData = async () => {
-        try {
-          if (cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0) {
-            const parksAndRecreationResponse = await fetch('./parks_recreation.geojson');
-            let parksAndRecreationDataJson = await parksAndRecreationResponse.json();
-  
-            parksAndRecreationDataJson = {
-              ...parksAndRecreationDataJson,
-              features: parksAndRecreationDataJson.features.filter((feature: { geometry: turf.Coord }) => {
-                const cityBoundaryFeature = cityBoundaryGeoJSON.features[0];
-                return turf.booleanPointInPolygon(feature.geometry, cityBoundaryFeature.geometry);
-              }),
-            };
-  
-            console.log(parksAndRecreationDataJson);
-            setShowParksAndRecreation(showParksAndRecreation);
-            setParksAndRecreationData(parksAndRecreationDataJson);
-          }
-        } catch (error) {
-          console.error("Error fetching GeoJSON data:", error);
-        }
-      };
-      fetchAndFilterParksAndRecreationData();
-    }, [showParksAndRecreation, cityBoundaryGeoJSON]);
-  }  
-
-  function useEffectSetHealthcareFacilitiesLayerData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
-    useEffect(() => {
-      const fetchAndFilterHealthcareFacilitiesData = async () => {
-        try {
-          if (cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0) {
-            const healthcareFacilitiesResponse = await fetch('./healthcare_facilities.geojson');
-            let healthcareFacilitiesDataJson = await healthcareFacilitiesResponse.json();
-  
-            healthcareFacilitiesDataJson = {
-              ...healthcareFacilitiesDataJson,
-              features: healthcareFacilitiesDataJson.features.filter((feature: { geometry: turf.Coord }) => {
-                const cityBoundaryFeature = cityBoundaryGeoJSON.features[0];
-                return turf.booleanPointInPolygon(feature.geometry, cityBoundaryFeature.geometry);
-              }),
-            };
-  
-            console.log(healthcareFacilitiesDataJson);
-            setShowHealthcareFacilities(showHealthcareFacilities);
-            setHealthcareFacilitiesData(healthcareFacilitiesDataJson);
-          }
-        } catch (error) {
-          console.error("Error fetching GeoJSON data:", error);
-        }
-      };
-      fetchAndFilterHealthcareFacilitiesData();
-    }, [showHealthcareFacilities, cityBoundaryGeoJSON]);
   }
 
-  function useEffectCenterMap() {
+
+  async function fetchAndFilterLayerData({ url, cityBoundaryGeoJSON, _setShowLayer, setLayerData, tolerance=0.01 }: { url: RequestInfo | URL; cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null; _setShowLayer: { (value: React.SetStateAction<boolean>): void; (value: React.SetStateAction<boolean>): void; (value: React.SetStateAction<boolean>): void; (arg0: boolean): void; }; setLayerData: { (value: React.SetStateAction<GeoJSONData | null>): void; (value: React.SetStateAction<GeoJSONData | null>): void; (value: React.SetStateAction<GeoJSONData | null>): void; (arg0: any): void; }; tolerance: number;}): Promise<void> {
+    try {
+      const response = await fetch(url);
+      let dataJson = await response.json();
+
+      const simplifiedCityBoundary = cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0
+        ? turf.simplify(cityBoundaryGeoJSON.features[0], { tolerance, highQuality: false })
+        : null;
+
+      if (simplifiedCityBoundary) {
+        dataJson = {
+          ...dataJson,
+          features: dataJson.features.filter((feature: { geometry: turf.Coord; }) => {
+            return turf.booleanPointInPolygon(feature.geometry, simplifiedCityBoundary.geometry);
+          }),
+        };
+      }
+
+      setLayerData(dataJson);
+    } catch (error) {
+      console.error("Error fetching GeoJSON data:", error);
+    }
+  }
+
+  function useEffectCenterMap(): void {
     useEffect(() => {
-      if (!allMarkersBoundCenter || !map) return
+      if (!allMarkersBoundCenter || !map) return;
 
       const moveEnd = () => {
-        map.setMinZoom(allMarkersBoundCenter.minZoom - 1)
-        map.off('moveend', moveEnd)
-      }
+        map.setMinZoom(allMarkersBoundCenter.minZoom - 1);
+        map.off('moveend', moveEnd);
+      };
 
-      map.setMinZoom(0)
-      map.flyTo(allMarkersBoundCenter.centerPos, allMarkersBoundCenter.minZoom, { animate: false })
-      map.once('moveend', moveEnd)
-    }, [allMarkersBoundCenter, map])
+      map.setMinZoom(0);
+      map.flyTo(allMarkersBoundCenter.centerPos, allMarkersBoundCenter.minZoom, { animate: false });
+      map.once('moveend', moveEnd);
+    }, [allMarkersBoundCenter, map]);
   }
 
-  function useEffectPriorityData() {
+  function useLayerGroupEffect({
+    map, data, showLayer, layerGroupName, iconUrl
+  }: UseLayerGroupEffectParams): void {
     useEffect(() => {
-      if (!map || !priorityData || !L) {
-        return
+      if (!map || !data || !L) {
+        return;
       }
 
-      let priorityLayerGroup = (map as any).priorityLayerGroup as L.LayerGroup | undefined
+      let layerGroup = (map as any)[layerGroupName] as L.LayerGroup | undefined;
 
-      if (!priorityLayerGroup) {
-        priorityLayerGroup = new L.LayerGroup().addTo(map);
-        (map as any).priorityLayerGroup = priorityLayerGroup
-      } else {
-        priorityLayerGroup.clearLayers()
-      }
+      if (showLayer) {
+        const icon = L.icon({
+          iconUrl: iconUrl,
+          iconSize: [16, 16],
+          iconAnchor: [0, 0],
+          popupAnchor: [0, 0]
+        });
 
-      const addGeoJsonLayerToGroup = (geoJsonData: GeoJSONData | GeoJsonObject | GeoJsonObject[] | undefined, style: { color: string; weight: number; opacity: number} ) => {
-        if (priorityLayerGroup) {
-          const layer = L.geoJSON(geoJsonData, { style })
-          priorityLayerGroup.addLayer(layer)
+        if (!layerGroup) {
+          layerGroup = new L.LayerGroup().addTo(map);
+          (map as any)[layerGroupName] = layerGroup;
         } else {
-          console.error('priorityLayerGroup is not initialized.')
+          layerGroup.clearLayers();
+        }
+
+        const layer = L.geoJSON(data, {
+          style: { color: "#ff7800", weight: 1, opacity: 1 },
+          pointToLayer: function (_feature, latlng) {
+            return L.marker(latlng, { icon: icon });
+          }
+        });
+
+        layerGroup.addLayer(layer);
+      } else {
+        if (layerGroup) {
+          layerGroup.clearLayers();
+          map.removeLayer(layerGroup);
+          (map as any)[layerGroupName] = undefined;
         }
       }
-
-      if (showPriorityData) {
-        addGeoJsonLayerToGroup(priorityData, priorityStyle)
-      }
-
-      return () => {
-        if (priorityLayerGroup) {
-          priorityLayerGroup.clearLayers()
-          map.removeLayer(priorityLayerGroup);
-          (map as any).priorityLayerGroup = undefined
-        }
-      }
-    }, [priorityData])
+    }, [showLayer, data, map, layerGroupName, iconUrl]);
   }
 
-  function useEffectFeasibleData() {
+  function useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON }: { cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null; }): void {
     useEffect(() => {
-      if (!map || !feasibleData || !L) {
-        return
-      }
+      fetchAndFilterLayerData({ url: './transit_stops.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowTransitStops, setLayerData: setTransitStopsData, tolerance: 0.05 });
+    }, [cityBoundaryGeoJSON]);
+  }
 
-      let feasibleLayerGroup = (map as any).feasibleLayerGroup as L.LayerGroup | undefined
+  function useEffectSetParksAndRecreationLayerData({ cityBoundaryGeoJSON }: { cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null; }): void {
+    useEffect(() => {
+      fetchAndFilterLayerData({ url: './parks_recreation.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowParksAndRecreation, setLayerData: setParksAndRecreationData, tolerance: 0.01 });
+    }, [cityBoundaryGeoJSON]);
+  }
 
-      if (!feasibleLayerGroup) {
-        feasibleLayerGroup = new L.LayerGroup().addTo(map);
-        (map as any).feasibleLayerGroup = feasibleLayerGroup
-      } else {
-        feasibleLayerGroup.clearLayers()
-      }
-
-      const addGeoJsonLayerToGroup = (geoJsonData: GeoJSONData | GeoJsonObject | GeoJsonObject[] | undefined, style: { color: string; weight: number; opacity: number} ) => {
-        if (feasibleLayerGroup) {
-          const layer = L.geoJSON(geoJsonData, { style })
-          feasibleLayerGroup.addLayer(layer)
-        } else {
-          console.error('feasibleLayerGroup is not initialized.')
-        }
-      }
-
-      if (showFeasibleData) {
-        addGeoJsonLayerToGroup(feasibleData, feasibleStyle)
-      }
-
-      return () => {
-        if (feasibleLayerGroup) {
-          feasibleLayerGroup.clearLayers()
-          map.removeLayer(feasibleLayerGroup);
-          (map as any).feasibleLayerGroup = undefined
-        }
-      }
-    }, [feasibleData])
+  function useEffectSetHealthcareFacilitiesLayerData({ cityBoundaryGeoJSON }: { cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null; }): void {
+    useEffect(() => {
+      fetchAndFilterLayerData({ url: './healthcare_facilities.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowHealthcareFacilities, setLayerData: setHealthcareFacilitiesData, tolerance: 0.01 });
+    }, [cityBoundaryGeoJSON]);
   }
 
   function useEffectTransitStops(): void {
-    useEffect(() => {
-      if (!map || !transitStopsData || !L) {
-        return
-      }
-      let transitStopsLayerGroup = (map as any).transitStopsLayerGroup as L.LayerGroup | undefined
-
-      if (showTransitStops) {
-        const transitStopsIcon = L.icon({
-          iconUrl: 'vehicles.png',
-          iconSize: [16, 16],
-          iconAnchor: [0, 0],
-          popupAnchor: [0, 0]
-        })
-        if (!transitStopsLayerGroup) {
-          transitStopsLayerGroup = new L.LayerGroup().addTo(map);
-          (map as any).transitStopsLayerGroup = transitStopsLayerGroup
-        } else {
-          transitStopsLayerGroup.clearLayers()
-        }
-
-        const layer = L.geoJSON(transitStopsData, {
-          style: { color: "#ff7800", weight: 1, opacity: 1 },
-          pointToLayer: function (_feature, latlng) {
-            return L.marker(latlng, { icon: transitStopsIcon })
-          }
-        })
-        transitStopsLayerGroup.addLayer(layer)
-      } else {
-        if (transitStopsLayerGroup) {
-          transitStopsLayerGroup.clearLayers()
-          map.removeLayer(transitStopsLayerGroup);
-          (map as any).transitStopsLayerGroup = undefined
-        }
-      }
-    }, [showTransitStops, transitStopsData])
+    useLayerGroupEffect({
+      map: map,
+      data: transitStopsData,
+      showLayer: showTransitStops,
+      layerGroupName: 'transitStopsLayerGroup',
+      iconUrl: 'vehicles.png'
+    });
   }
 
   function useEffectParksAndRecreation(): void {
-    useEffect(() => {
-      if (!map || !parksAndRecreationData || !L) {
-        return
-      }
-      let parksAndRecreationLayerGroup = (map as any).parksAndRecreationLayerGroup as L.LayerGroup | undefined
-
-      if (showParksAndRecreation) {
-        const parksAndRecreationIcon = L.icon({
-          iconUrl: 'bench.png',
-          iconSize: [16, 16],
-          iconAnchor: [0, 0],
-          popupAnchor: [0, 0]
-        })
-        if (!parksAndRecreationLayerGroup) {
-          parksAndRecreationLayerGroup = new L.LayerGroup().addTo(map);
-          (map as any).parksAndRecreationLayerGroup = parksAndRecreationLayerGroup
-        } else {
-          parksAndRecreationLayerGroup.clearLayers()
-        }
-
-        const layer = L.geoJSON(parksAndRecreationData, {
-          style: { color: "#ff7800", weight: 1, opacity: 1 },
-          pointToLayer: function (_feature, latlng) {
-            return L.marker(latlng, { icon: parksAndRecreationIcon })
-          }
-        })
-        parksAndRecreationLayerGroup.addLayer(layer)
-      } else {
-        if (parksAndRecreationLayerGroup) {
-          parksAndRecreationLayerGroup.clearLayers()
-          map.removeLayer(parksAndRecreationLayerGroup);
-          (map as any).parksAndRecreationLayerGroup = undefined
-        }
-      }
-    }, [showParksAndRecreation, parksAndRecreationData])
+    useLayerGroupEffect({
+      map: map,
+      data: parksAndRecreationData,
+      showLayer: showParksAndRecreation,
+      layerGroupName: 'parksAndRecreationLayerGroup',
+      iconUrl: 'bench.png'
+    });
   }
 
   function useEffectHealthCareFacilities(): void {
-    useEffect(() => {
-      if (!map || !healthcareFacilitiesData || !L) {
-        return
-      }
-      let healthcareFacilitiesLayerGroup = (map as any).healthcareFacilitiesLayerGroup as L.LayerGroup | undefined
-
-      if (showHealthcareFacilities) {
-        const healthcareFacilitiesIcon = L.icon({
-          iconUrl: 'first-aid-kit.png',
-          iconSize: [16, 16],
-          iconAnchor: [0, 0],
-          popupAnchor: [0, 0]
-        })
-        if (!healthcareFacilitiesLayerGroup) {
-          healthcareFacilitiesLayerGroup = new L.LayerGroup().addTo(map);
-          (map as any).healthcareFacilitiesLayerGroup = healthcareFacilitiesLayerGroup
-        } else {
-          healthcareFacilitiesLayerGroup.clearLayers()
-        }
-
-        const layer = L.geoJSON(healthcareFacilitiesData, {
-          style: { color: "#ff7800", weight: 1, opacity: 1 },
-          pointToLayer: function (_feature, latlng) {
-            return L.marker(latlng, { icon: healthcareFacilitiesIcon })
-          }
-        })
-        healthcareFacilitiesLayerGroup.addLayer(layer)
-      } else {
-        if (healthcareFacilitiesLayerGroup) {
-          healthcareFacilitiesLayerGroup.clearLayers()
-          map.removeLayer(healthcareFacilitiesLayerGroup);
-          (map as any).healthcareFacilitiesLayerGroup = undefined
-        }
-      }
-    }, [showHealthcareFacilities, healthcareFacilitiesData])
+    useLayerGroupEffect({
+      map: map,
+      data: healthcareFacilitiesData,
+      showLayer: showHealthcareFacilities,
+      layerGroupName: 'healthcareFacilitiesLayerGroup',
+      iconUrl: 'first-aid-kit.png'
+    });
   }
-};
+}
 
-// pass through to get context in <MapInner>
 const Map = () => (
   <MapContextProvider>
     <MapInner />
