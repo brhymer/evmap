@@ -1,68 +1,81 @@
-import React, { useEffect, useRef } from 'react';
-import { DataConfig } from ".";
+/* eslint-disable import/no-cycle */
+
+/* eslint-disable jsx-a11y/label-has-associated-control */
+
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+import React, { useEffect, useRef } from 'react'
+
+import { DataConfig } from '.'
 
 interface ConfigurationPanelProps {
-  priorityDataConfig: DataConfig;
-  feasibleDataConfig: DataConfig;
-  setPriorityDataConfig: React.Dispatch<React.SetStateAction<DataConfig>>;
-  setFeasibleDataConfig: React.Dispatch<React.SetStateAction<DataConfig>>;
-  closePanel: () => void;
+  priorityDataConfig: DataConfig
+  feasibleDataConfig: DataConfig
+  setPriorityDataConfig: React.Dispatch<React.SetStateAction<DataConfig>>
+  setFeasibleDataConfig: React.Dispatch<React.SetStateAction<DataConfig>>
+  closePanel: () => void
 }
 
 const titlesMap = {
-  togglePopRange: "Population in pixels",
-  toggleCiRange: "CES Percentile",
-  toggleLevRange: "LEVs/10000",
-  toggleMultiFaRange: "# Multi-Family",
-  toggleRentersRange: "# Renters",
-  toggleWalkableRange: "Walkable",
-  toggleDrivableRange: "Drivable",
-  toggleCommercialRange: "Commercial Zoning %",
-  toggleResidentialRange: "Multifamily Residential Zoning %",
-  toggleNeviFilterActive: "NEVI Eligible",
-  togglePgeFilterActive: "Grid Capacity"
-};
+  togglePopRange: 'Population in pixels',
+  toggleCiRange: 'CES Percentile',
+  toggleLevRange: 'LEVs/10000',
+  toggleMultiFaRange: '# Multi-Family',
+  toggleRentersRange: '# Renters',
+  toggleWalkableRange: 'Walkable',
+  toggleDrivableRange: 'Drivable',
+  toggleCommercialRange: 'Commercial Zoning %',
+  toggleResidentialRange: 'Multifamily Residential Zoning %',
+  toggleNeviFilterActive: 'NEVI Eligible',
+  togglePgeFilterActive: 'Grid Capacity',
+}
 
 const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
   priorityDataConfig,
   feasibleDataConfig,
   setPriorityDataConfig,
   setFeasibleDataConfig,
-  closePanel
+  closePanel,
 }) => {
-  const panelRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleDocumentClick = (event: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
-        closePanel();
+        closePanel()
       }
-    };
+    }
 
-    document.addEventListener('mousedown', handleDocumentClick);
+    document.addEventListener('mousedown', handleDocumentClick)
     return () => {
-      document.removeEventListener('mousedown', handleDocumentClick);
-    };
-  }, [closePanel]);
+      document.removeEventListener('mousedown', handleDocumentClick)
+    }
+  }, [closePanel])
 
   const handlePriorityChange = (key: keyof DataConfig) => {
-    setPriorityDataConfig(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+    setPriorityDataConfig(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
   const handleFeasibleChange = (key: keyof DataConfig) => {
-    setFeasibleDataConfig(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+    setFeasibleDataConfig(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
   return (
-    <div className="config-panel-container" onClick={(event) => {
-      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
-        closePanel();
-      }
-    }}>
+    <div
+      className="config-panel-container"
+      onClick={event => {
+        if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+          closePanel()
+        }
+      }}
+    >
       <div className="config-panel" ref={panelRef}>
         <div className="config-columns">
           <div className="config-section">
-            <h2><b>Priority Data</b></h2>
+            <h2>
+              <b>Priority Data</b>
+            </h2>
             <div className="checkbox-column">
               {Object.entries(priorityDataConfig).map(([key, value]) => (
                 <label key={key} className="config-item">
@@ -79,7 +92,9 @@ const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
           </div>
 
           <div className="config-section">
-            <h2><b>Feasible Data</b></h2>
+            <h2>
+              <b>Feasible Data</b>
+            </h2>
             <div className="checkbox-column">
               {Object.entries(feasibleDataConfig).map(([key, value]) => (
                 <label key={key} className="config-item">
@@ -97,7 +112,7 @@ const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ConfigurationPanel;
+export default ConfigurationPanel

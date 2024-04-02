@@ -90,4 +90,4 @@ export const Places: PlacesType = [
   //   position: [37.8425, -122.2258], // Glenview neighborhood
   //   category: Category.CAT2,
   // },
-];   
+]

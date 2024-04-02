@@ -1,18 +1,18 @@
-import { useState, useEffect } from 'react';
-import * as L from 'leaflet';
+import * as L from 'leaflet'
+import { useEffect, useState } from 'react'
 
 const useLeaflet = () => {
-  const [leaflet, setLeaflet] = useState<typeof L | null>(null);
+  const [leaflet, setLeaflet] = useState<typeof L | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       import('leaflet').then(leafletModule => {
-        setLeaflet(leafletModule.default);
-      });
+        setLeaflet(leafletModule.default)
+      })
     }
-  }, []);
+  }, [])
 
-  return leaflet;
-};
+  return leaflet
+}
 
-export default useLeaflet;
+export default useLeaflet
