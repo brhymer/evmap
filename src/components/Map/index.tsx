@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useResizeDetector } from 'react-resize-detector'
 import "react-toggle/style.css"; 
-import settingsIcon from './settings.svg';
 
 import MapTopBar from '@components/TopBar'
 import { AppConfig } from '@lib/AppConfig'
@@ -12,11 +11,10 @@ import useLeafletWindow from './useLeafletWindow'
 import useMapContext from './useMapContext'
 import useMarkerData from './useMarkerData'
 import useLeaflet from './useLeaflet'
-import LayerIntersection from './LayerIntersection';
 import { DataControls } from './DataControls';
 import ConfigurationPanel from './ConfigurationPanel';
 import * as turf from '@turf/turf';
-import { FeatureCollection, Polygon, MultiPolygon, GeoJsonProperties } from 'geojson';
+import { FeatureCollection, Polygon, MultiPolygon, GeoJsonProperties, Feature } from 'geojson';
 import { GeoJSONData, LeafletMapContainer, CenterToMarkerButton, LocateButton, LeafletCluster, CustomMarker } from './GeoJSONData'
 
 export type Range = [number, number];
@@ -44,8 +42,6 @@ export type DataConfig = {
 };
 
 function MapInner(): JSX.Element {
-  const [showIntersection, setShowIntersection] = useState(false);
-  const [setIntersectionData] = useState<FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null>(null);
   const [priorityData, setPriorityData] = useState<FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null>(null);
   const [feasibleData, setFeasibleData] = useState<FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null>(null);
   const { map } = useMapContext();
@@ -67,8 +63,8 @@ function MapInner(): JSX.Element {
 
   const isLoading = !map || !leafletWindow || !viewportWidth || !viewportHeight;
 
-  const [showTransitStops, setShowTransitStops] = useState(false);
-  const [transitStopsData, setTransitStopsData] = useState<GeoJSONData | null>(null);
+  // const [showTransitStops, setShowTransitStops] = useState(false);
+  // const [transitStopsData, setTransitStopsData] = useState<GeoJSONData | null>(null);
   const [showParksAndRecreation, setShowParksAndRecreation] = useState(false);
   const [parksAndRecreationData, setParksAndRecreationData] = useState<GeoJSONData | null>(null);
   const [showHealthcareFacilities, setShowHealthcareFacilities] = useState(false);
@@ -103,18 +99,24 @@ function MapInner(): JSX.Element {
   });
 
   const cityBoundaryGeoJSON = useEffectFetchCityBoundary();
-  useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON });
+
+  let cached = {
+    cityBoundaryGeoJSON: cityBoundaryGeoJSON,
+    simplifiedCityBoundary: null
+  };
+  
+  // useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON });
   useEffectSetParksAndRecreationLayerData({ cityBoundaryGeoJSON });
   useEffectSetHealthcareFacilitiesLayerData({ cityBoundaryGeoJSON });
   useEffectCenterMap();
-  useEffectTransitStops();
+  // useEffectTransitStops();
   useEffectParksAndRecreation();
   useEffectHealthCareFacilities();
 
   const mapHtml = <div>
     <div className="map-controls">
       <button onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)}>
-        <img src='./settings.png' className='settings-icon'></img>
+        <img src='https://ev-charging-mapviewer-assets.s3.amazonaws.com/settings.png' className='settings-icon'></img>
       </button>
 
       {isConfigPanelOpen && (
@@ -134,7 +136,7 @@ function MapInner(): JSX.Element {
         L={L}
         cityBoundaryGeoJSON={cityBoundaryGeoJSON}
         color='#3388ff'
-        geojsonUrl='/oakland_priority.geojson'
+        geojsonUrl='https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_priority.geojson'
         onDataUpdate={setPriorityData} 
         config={priorityDataConfig}
       />
@@ -144,7 +146,7 @@ function MapInner(): JSX.Element {
         L={L}
         cityBoundaryGeoJSON={cityBoundaryGeoJSON}
         color="#ffa500"
-        geojsonUrl='/oakland_priority.geojson'
+        geojsonUrl='https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_priority.geojson'
         onDataUpdate={setFeasibleData} 
         config={feasibleDataConfig}
       />
@@ -154,13 +156,13 @@ function MapInner(): JSX.Element {
       </label>
       <div className="checkbox-group">
         <div className="checkbox-column">
-          <label>
+          {/* <label>
             <input
               type="checkbox"
               checked={showTransitStops}
               onChange={() => setShowTransitStops(!showTransitStops)} />
             Transit Stops
-          </label>
+          </label> */}
           <label>
             <input
               type="checkbox"
@@ -264,7 +266,7 @@ function MapInner(): JSX.Element {
 
   async function fetchCityBoundary(): Promise<any> {
     try {
-      const cityBoundaryResponse = await fetch('/oakland_city_limits.geojson');
+      const cityBoundaryResponse = await fetch('https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_city_limits.geojson');
       if (!cityBoundaryResponse.ok) {
         throw new Error(`Error fetching city boundary: ${cityBoundaryResponse.statusText}`);
       }
@@ -276,25 +278,27 @@ function MapInner(): JSX.Element {
     }
   }
 
-
-  async function fetchAndFilterLayerData({ url, cityBoundaryGeoJSON, _setShowLayer, setLayerData, tolerance=0.01 }: { url: RequestInfo | URL; cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null; _setShowLayer: { (value: React.SetStateAction<boolean>): void; (value: React.SetStateAction<boolean>): void; (value: React.SetStateAction<boolean>): void; (arg0: boolean): void; }; setLayerData: { (value: React.SetStateAction<GeoJSONData | null>): void; (value: React.SetStateAction<GeoJSONData | null>): void; (value: React.SetStateAction<GeoJSONData | null>): void; (arg0: any): void; }; tolerance: number;}): Promise<void> {
+  async function fetchAndFilterLayerData({ url, cityBoundaryGeoJSON, setLayerData, tolerance=0.01 }: { url: RequestInfo | URL; cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null; _setShowLayer: { (value: React.SetStateAction<boolean>): void; (value: React.SetStateAction<boolean>): void; (value: React.SetStateAction<boolean>): void; (arg0: boolean): void; }; setLayerData: { (value: React.SetStateAction<GeoJSONData | null>): void; (value: React.SetStateAction<GeoJSONData | null>): void; (value: React.SetStateAction<GeoJSONData | null>): void; (arg0: any): void; }; tolerance: number;}): Promise<void> {
     try {
       const response = await fetch(url);
       let dataJson = await response.json();
-
-      const simplifiedCityBoundary = cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0
-        ? turf.simplify(cityBoundaryGeoJSON.features[0], { tolerance, highQuality: false })
-        : null;
-
-      if (simplifiedCityBoundary) {
+  
+      if (cached.simplifiedCityBoundary != null || cached.cityBoundaryGeoJSON !== cityBoundaryGeoJSON) {
+        if (cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0) {
+          cached.simplifiedCityBoundary = turf.simplify(cityBoundaryGeoJSON.features[0], { tolerance, highQuality: false });
+          cached.cityBoundaryGeoJSON = cityBoundaryGeoJSON;
+        } else {
+          cached.simplifiedCityBoundary = null;
+        }
+      }
+  
+      if (cached.simplifiedCityBoundary) {
         dataJson = {
           ...dataJson,
-          features: dataJson.features.filter((feature: { geometry: turf.Coord; }) => {
-            return turf.booleanPointInPolygon(feature.geometry, simplifiedCityBoundary.geometry);
-          }),
+          features: dataJson.features.filter((feature: { geometry: turf.Coord; }) => turf.booleanPointInPolygon(feature.geometry, cached.simplifiedCityBoundary.geometry)),
         };
       }
-
+  
       setLayerData(dataJson);
     } catch (error) {
       console.error("Error fetching GeoJSON data:", error);
@@ -359,33 +363,33 @@ function MapInner(): JSX.Element {
     }, [showLayer, data, map, layerGroupName, iconUrl]);
   }
 
-  function useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON }: { cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null; }): void {
-    useEffect(() => {
-      fetchAndFilterLayerData({ url: './transit_stops.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowTransitStops, setLayerData: setTransitStopsData, tolerance: 0.05 });
-    }, [cityBoundaryGeoJSON]);
-  }
+  // function useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON }: { cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null; }): void {
+  //   useEffect(() => {
+  //     fetchAndFilterLayerData({ url: './transit_stops.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowTransitStops, setLayerData: setTransitStopsData, tolerance: 0.05 });
+  //   }, [cityBoundaryGeoJSON]);
+  // }
 
   function useEffectSetParksAndRecreationLayerData({ cityBoundaryGeoJSON }: { cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null; }): void {
     useEffect(() => {
-      fetchAndFilterLayerData({ url: './parks_recreation.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowParksAndRecreation, setLayerData: setParksAndRecreationData, tolerance: 0.01 });
+      fetchAndFilterLayerData({ url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/parks_recreation.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowParksAndRecreation, setLayerData: setParksAndRecreationData, tolerance: 0.05 });
     }, [cityBoundaryGeoJSON]);
   }
 
   function useEffectSetHealthcareFacilitiesLayerData({ cityBoundaryGeoJSON }: { cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null; }): void {
     useEffect(() => {
-      fetchAndFilterLayerData({ url: './healthcare_facilities.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowHealthcareFacilities, setLayerData: setHealthcareFacilitiesData, tolerance: 0.01 });
+      fetchAndFilterLayerData({ url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/healthcare_facilities.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowHealthcareFacilities, setLayerData: setHealthcareFacilitiesData, tolerance: 0.05 });
     }, [cityBoundaryGeoJSON]);
   }
 
-  function useEffectTransitStops(): void {
-    useLayerGroupEffect({
-      map: map,
-      data: transitStopsData,
-      showLayer: showTransitStops,
-      layerGroupName: 'transitStopsLayerGroup',
-      iconUrl: 'vehicles.png'
-    });
-  }
+  // function useEffectTransitStops(): void {
+  //   useLayerGroupEffect({
+  //     map: map,
+  //     data: transitStopsData,
+  //     showLayer: showTransitStops,
+  //     layerGroupName: 'transitStopsLayerGroup',
+  //     iconUrl: 'vehicles.png'
+  //   });
+  // }
 
   function useEffectParksAndRecreation(): void {
     useLayerGroupEffect({
@@ -393,7 +397,7 @@ function MapInner(): JSX.Element {
       data: parksAndRecreationData,
       showLayer: showParksAndRecreation,
       layerGroupName: 'parksAndRecreationLayerGroup',
-      iconUrl: 'bench.png'
+      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/bench.png'
     });
   }
 
@@ -403,7 +407,7 @@ function MapInner(): JSX.Element {
       data: healthcareFacilitiesData,
       showLayer: showHealthcareFacilities,
       layerGroupName: 'healthcareFacilitiesLayerGroup',
-      iconUrl: 'first-aid-kit.png'
+      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/first-aid-kit.png'
     });
   }
 }
