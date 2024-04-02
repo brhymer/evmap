@@ -100,7 +100,12 @@ function MapInner(): JSX.Element {
 
   const cityBoundaryGeoJSON = useEffectFetchCityBoundary();
 
-  let cached = {
+  interface CachedType {
+    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null;
+    simplifiedCityBoundary: Feature<Polygon | MultiPolygon, GeoJsonProperties> | null;
+  }
+
+  let cached: CachedType = {
     cityBoundaryGeoJSON: cityBoundaryGeoJSON,
     simplifiedCityBoundary: null
   };
@@ -292,12 +297,14 @@ function MapInner(): JSX.Element {
         }
       }
   
-      if (cached.simplifiedCityBoundary) {
+      if (cached.simplifiedCityBoundary && cached.simplifiedCityBoundary.geometry) {
         dataJson = {
-          ...dataJson,
-          features: dataJson.features.filter((feature: { geometry: turf.Coord; }) => turf.booleanPointInPolygon(feature.geometry, cached.simplifiedCityBoundary.geometry)),
+            ...dataJson,
+            features: dataJson.features.filter((feature: { geometry: turf.Coord; }) => 
+                turf.booleanPointInPolygon(feature.geometry, cached.simplifiedCityBoundary!.geometry)
+            ),
         };
-      }
+    }    
   
       setLayerData(dataJson);
     } catch (error) {

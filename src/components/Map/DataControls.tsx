@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Slider from 'react-slider';
 import Toggle from 'react-toggle';
-import SketchPicker from 'react-color';
+const SketchPicker: any = require('react-color').SketchPicker;
 import * as turf from '@turf/turf';
 import { FeatureCollection, Point, Polygon, MultiPolygon } from 'geojson';
 import { GeoJSONData, GeoJSONFeature } from './GeoJSONData';
