@@ -70,13 +70,13 @@ const Home = () => (
         </span>
         <footer className="mt-16 flex justify-between p-3 rounded bg-light text-sm">
           {' '}
-          This tool is a joint project of UC Berkeley's Renewable and Appropriate Energy Laboratory and Center
-          for Law, Energy & the Environment (CLEE) as part of CLEE's EV Equity Initiative. This is a
-          demonstration tool for review and data verification purposes and is not intended for public use. All
-          data acquired from public sources except as noted. Zoning data courtesy of Replica. Lead designers:
-          Ari Ball-Burack and Ankita Suresh Shanbhag. Other research credits: Eleanor Adachi, Radhika Agarwal,
-          Aki Konno. Initial funding provided by UC Berkeley Institute for Transportation studies. Contact:
-          tlamm@law.berkeley.edu, kammen@berkeley.edu.{' '}
+          This tool is a joint project of UC Berkeley&apos;s Renewable and Appropriate Energy Laboratory and
+          Center for Law, Energy & the Environment (CLEE) as part of CLEE&apos;s EV Equity Initiative. This is
+          a demonstration tool for review and data verification purposes and is not intended for public use.
+          All data acquired from public sources except as noted. Zoning data courtesy of Replica. Lead
+          designers: Ari Ball-Burack and Ankita Suresh Shanbhag. Other research credits: Eleanor Adachi,
+          Radhika Agarwal, Aki Konno. Initial funding provided by UC Berkeley Institute for Transportation
+          studies. Contact: tlamm@law.berkeley.edu, kammen@berkeley.edu.{' '}
         </footer>
       </p>
     </section>

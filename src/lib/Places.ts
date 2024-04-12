@@ -17,7 +17,7 @@ export const Places: PlacesType = [
   {
     position: [37.8044, -122.2712], // Oakland coordinates
     category: Category.CAT1,
-  }
+  },
   // {
   //   position: [37.7652, -122.2417], // Alameda coordinates
   //   category: Category.CAT1,

@@ -529,7 +529,7 @@ const MapInner = (): JSX.Element => {
   function useEffectSetLihtcLayerData({
     cityBoundaryGeoJSON,
   }: {
-    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null;
+    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null
   }): void {
     useEffect(() => {
       fetchAndFilterLayerData({
