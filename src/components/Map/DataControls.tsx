@@ -273,44 +273,12 @@ export const DataControls: React.FC<DataControlsProps> = ({
           {/* {layerData && (
                       <GeoJSONLayer data={layerData} style={{ color: color }} />
                     )} */}
-          {/* Population Slider */}
-          {togglePopRange && (
-            <label>
-              <br />
-              Population in pixels: {popRange[0]} to {popRange[1]}
-              <Slider
-                min={0}
-                max={200}
-                value={popRange}
-                onChange={setPopRange}
-                thumbClassName="slider-thumb"
-                trackClassName="slider-track"
-                renderThumb={(
-                  props: JSX.IntrinsicAttributes &
-                    React.ClassAttributes<HTMLDivElement> &
-                    React.HTMLAttributes<HTMLDivElement>,
-                  state: {
-                    valueNow:
-                      | string
-                      | number
-                      | boolean
-                      | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-                      | React.ReactFragment
-                      | React.ReactPortal
-                      | null
-                      | undefined
-                  },
-                ) => <div {...props}>{state.valueNow}</div>}
-                pearling
-                minDistance={5}
-              />
-            </label>
-          )}
           {/* CI Score Slider */}
           {toggleCiRange && (
             <label>
               <br />
-              CES Percentile: {ciScoreRange[0]} to {ciScoreRange[1]}
+              {/* CalEnviroScreen4.0 percentile: {ciScoreRange[0]} to {ciScoreRange[1]} */}
+              CalEnviroScreen4.0 percentile
               <Slider
                 min={0}
                 max={100}
@@ -375,7 +343,8 @@ export const DataControls: React.FC<DataControlsProps> = ({
           {/* Multi-Fa Slider */}
           {toggleMultiFaRange && (
             <label>
-              <br /># Multi-Fa: {multiFaRange[0]} to {multiFaRange[1]}
+              {/* <br /># Multi-Fa: {multiFaRange[0]} to {multiFaRange[1]} */}
+              <br /># Multifamily residents/pixel
               <Slider
                 min={0}
                 max={100}
@@ -407,7 +376,8 @@ export const DataControls: React.FC<DataControlsProps> = ({
           {/* Renters Slider */}
           {toggleRentersRange && (
             <label>
-              <br /># Renters: {rentersRange[0]} to {rentersRange[1]}
+              {/* <br /># Renters: {rentersRange[0]} to {rentersRange[1]} */}
+              <br /># Renters/pixel
               <Slider
                 min={0}
                 max={100}
@@ -440,7 +410,8 @@ export const DataControls: React.FC<DataControlsProps> = ({
           {toggleWalkableRange && (
             <label>
               <br />
-              Walkable: {walkableRange[0]} to {walkableRange[1]}
+              {/* Walkable: {walkableRange[0]} to {walkableRange[1]} */}
+              Walk score: L2 charger
               <Slider
                 min={0}
                 max={100}
@@ -473,7 +444,8 @@ export const DataControls: React.FC<DataControlsProps> = ({
           {toggleDrivableRange && (
             <label>
               <br />
-              Drivable: {drivableRange[0]} to {drivableRange[1]}
+              {/* Drivable: {drivableRange[0]} to {drivableRange[1]} */}
+              Drive score: DC fast charger
               <Slider
                 min={0}
                 max={100}
@@ -502,16 +474,17 @@ export const DataControls: React.FC<DataControlsProps> = ({
               />
             </label>
           )}
-          {/* Commercial Zoning Slider */}
-          {toggleCommercialRange && (
+          {/* Population Slider */}
+          {togglePopRange && (
             <label>
               <br />
-              Commercial Zoning %: {commercialRange[0]} to {commercialRange[1]}
+              {/* Population in pixels: {popRange[0]} to {popRange[1]} */}
+              Total population/pixel
               <Slider
                 min={0}
-                max={100}
-                value={commercialRange}
-                onChange={setCommercialRange}
+                max={200}
+                value={popRange}
+                onChange={setPopRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -535,40 +508,6 @@ export const DataControls: React.FC<DataControlsProps> = ({
               />
             </label>
           )}
-          {/* Residential Zoning Slider */}
-          {toggleResidentialRange && (
-            <label>
-              <br />
-              Multifamily Residential Zoning %: {residentialRange[0]} to {residentialRange[1]}
-              <Slider
-                min={0}
-                max={100}
-                value={residentialRange}
-                onChange={setResidentialRange}
-                thumbClassName="slider-thumb"
-                trackClassName="slider-track"
-                renderThumb={(
-                  props: JSX.IntrinsicAttributes &
-                    React.ClassAttributes<HTMLDivElement> &
-                    React.HTMLAttributes<HTMLDivElement>,
-                  state: {
-                    valueNow:
-                      | string
-                      | number
-                      | boolean
-                      | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-                      | React.ReactFragment
-                      | React.ReactPortal
-                      | null
-                      | undefined
-                  },
-                ) => <div {...props}>{state.valueNow}</div>}
-                pearling
-                minDistance={5}
-              />
-            </label>
-          )}
-          <br />
           {toggleNeviFilterActive && (
             <div className="checkbox-group">
               {/* NEVI Checkboxes */}
@@ -610,10 +549,78 @@ export const DataControls: React.FC<DataControlsProps> = ({
                     }}
                     icons={false}
                   />
-                  <span style={{ marginLeft: '20px' }}>Grid Capacity</span>
+                  <span style={{ marginLeft: '20px' }}>Grid Capacity (200ft/600kw)</span>
                 </label>
               </div>
             </div>
+          )}
+          {/* Commercial Zoning Slider */}
+          {toggleCommercialRange && (
+            <label>
+              <br />
+              {/* Commercial Zoning %: {commercialRange[0]} to {commercialRange[1]} */}
+              Commercial zoning %/pixel
+              <Slider
+                min={0}
+                max={100}
+                value={commercialRange}
+                onChange={setCommercialRange}
+                thumbClassName="slider-thumb"
+                trackClassName="slider-track"
+                renderThumb={(
+                  props: JSX.IntrinsicAttributes &
+                    React.ClassAttributes<HTMLDivElement> &
+                    React.HTMLAttributes<HTMLDivElement>,
+                  state: {
+                    valueNow:
+                      | string
+                      | number
+                      | boolean
+                      | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+                      | React.ReactFragment
+                      | React.ReactPortal
+                      | null
+                      | undefined
+                  },
+                ) => <div {...props}>{state.valueNow}</div>}
+                pearling
+                minDistance={5}
+              />
+            </label>
+          )}
+          {/* Residential Zoning Slider */}
+          {toggleResidentialRange && (
+            <label>
+              <br />
+              {/* Multifamily Residential Zoning %: {residentialRange[0]} to {residentialRange[1]} */}
+              Multifamily zoning %/pixel
+              <Slider
+                min={0}
+                max={100}
+                value={residentialRange}
+                onChange={setResidentialRange}
+                thumbClassName="slider-thumb"
+                trackClassName="slider-track"
+                renderThumb={(
+                  props: JSX.IntrinsicAttributes &
+                    React.ClassAttributes<HTMLDivElement> &
+                    React.HTMLAttributes<HTMLDivElement>,
+                  state: {
+                    valueNow:
+                      | string
+                      | number
+                      | boolean
+                      | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+                      | React.ReactFragment
+                      | React.ReactPortal
+                      | null
+                      | undefined
+                  },
+                ) => <div {...props}>{state.valueNow}</div>}
+                pearling
+                minDistance={5}
+              />
+            </label>
           )}
         </>
       )}

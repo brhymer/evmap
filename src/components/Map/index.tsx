@@ -78,6 +78,10 @@ const MapInner = (): JSX.Element => {
     Polygon | MultiPolygon,
     GeoJsonProperties
   > | null>(null)
+  // const [lihtcData, setLihtcData] = useState<FeatureCollection<
+  //   Polygon | MultiPolygon,
+  //   GeoJsonProperties
+  // > | null>(null) // Added LIHTC data state
   const { map } = useMapContext()
   const L = useLeaflet()
   const leafletWindow = useLeafletWindow()
@@ -99,8 +103,12 @@ const MapInner = (): JSX.Element => {
 
   const isLoading = !map || !leafletWindow || !viewportWidth || !viewportHeight
 
-  // const [showTransitStops, setShowTransitStops] = useState(false);
-  // const [transitStopsData, setTransitStopsData] = useState<GeoJSONData | null>(null);
+  const [showTransitStops, setShowTransitStops] = useState(false)
+  const [transitStopsData, setTransitStopsData] = useState<GeoJSONData | null>(null)
+  const [showLihtc, setShowLihtc] = useState(false)
+  const [lihtcData, setLihtcData] = useState<GeoJSONData | null>(null)
+  const [showSchool, setShowSchool] = useState(false)
+  const [schoolsData, setSchoolData] = useState<GeoJSONData | null>(null)
   const [showParksAndRecreation, setShowParksAndRecreation] = useState(false)
   const [parksAndRecreationData, setParksAndRecreationData] = useState<GeoJSONData | null>(null)
   const [showHealthcareFacilities, setShowHealthcareFacilities] = useState(false)
@@ -146,13 +154,17 @@ const MapInner = (): JSX.Element => {
     simplifiedCityBoundary: null,
   }
 
-  // useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON });
+  useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON })
   useEffectSetParksAndRecreationLayerData({ cityBoundaryGeoJSON })
   useEffectSetHealthcareFacilitiesLayerData({ cityBoundaryGeoJSON })
   useEffectCenterMap()
-  // useEffectTransitStops();
+  useEffectTransitStops()
   useEffectParksAndRecreation()
   useEffectHealthCareFacilities()
+  useEffectSetLihtcLayerData({ cityBoundaryGeoJSON }) // Added effect for LIHTC data
+  useEffectLihtc()
+  useEffectSetSchoolLayerData({ cityBoundaryGeoJSON })
+  useEffectSchool()
 
   const mapHtml = (
     <div>
@@ -176,7 +188,7 @@ const MapInner = (): JSX.Element => {
           />
         )}
         <DataControls
-          dataControlsTitle="Priority Data"
+          dataControlsTitle="Priority Pixels"
           map={map}
           L={L}
           cityBoundaryGeoJSON={cityBoundaryGeoJSON}
@@ -186,7 +198,7 @@ const MapInner = (): JSX.Element => {
           config={priorityDataConfig}
         />
         <DataControls
-          dataControlsTitle="Feasible Data"
+          dataControlsTitle="Feasible Pixels"
           map={map}
           L={L}
           cityBoundaryGeoJSON={cityBoundaryGeoJSON}
@@ -197,7 +209,7 @@ const MapInner = (): JSX.Element => {
         />
         <br />
         <label>
-          <b>Points of Interest</b>
+          <b>Co-location Points</b>
         </label>
         <div className="checkbox-group">
           <div className="checkbox-column">
@@ -208,6 +220,15 @@ const MapInner = (): JSX.Element => {
               onChange={() => setShowTransitStops(!showTransitStops)} />
             Transit Stops
           </label> */}
+            <label>
+              <input
+                type="checkbox"
+                checked={showTransitStops}
+                onChange={() => setShowTransitStops(!showTransitStops)}
+              />
+              {/* Transit Stops */}
+              BART stations
+            </label>
             <label>
               <input
                 type="checkbox"
@@ -224,6 +245,14 @@ const MapInner = (): JSX.Element => {
               />
               Healthcare Facilities
             </label>
+            {/* <label>
+              <input type="checkbox" checked={showLihtc} onChange={() => setShowLihtc(!showLihtc)} />
+              LIHTC properties
+            </label> */}
+            {/* <label>
+              <input type="checkbox" checked={showSchool} onChange={() => setShowSchool(!showSchool)} />
+              Public schools
+            </label> */}
           </div>
         </div>
         {/* <label>
@@ -415,7 +444,7 @@ const MapInner = (): JSX.Element => {
       if (showLayer) {
         const icon = L.icon({
           iconUrl,
-          iconSize: [16, 16],
+          iconSize: [20, 20],
           iconAnchor: [0, 0],
           popupAnchor: [0, 0],
         })
@@ -445,7 +474,7 @@ const MapInner = (): JSX.Element => {
 
   // function useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON }: { cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null; }): void {
   //   useEffect(() => {
-  //     fetchAndFilterLayerData({ url: './transit_stops.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowTransitStops, setLayerData: setTransitStopsData, tolerance: 0.05 });
+  //     fetchAndFilterLayerData({ url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_bart.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowTransitStops, setLayerData: setTransitStopsData, tolerance: 0.05 });
   //   }, [cityBoundaryGeoJSON]);
   // }
 
@@ -481,15 +510,63 @@ const MapInner = (): JSX.Element => {
     }, [cityBoundaryGeoJSON])
   }
 
-  // function useEffectTransitStops(): void {
-  //   useLayerGroupEffect({
-  //     map: map,
-  //     data: transitStopsData,
-  //     showLayer: showTransitStops,
-  //     layerGroupName: 'transitStopsLayerGroup',
-  //     iconUrl: 'vehicles.png'
-  //   });
-  // }
+  function useEffectSetTransitStopsLayerData({
+    cityBoundaryGeoJSON,
+  }: {
+    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null
+  }): void {
+    useEffect(() => {
+      fetchAndFilterLayerData({
+        url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/bart_oakland.geojson',
+        cityBoundaryGeoJSON,
+        _setShowLayer: setShowTransitStops,
+        setLayerData: setTransitStopsData,
+        tolerance: 0.05,
+      })
+    }, [cityBoundaryGeoJSON])
+  }
+
+  function useEffectSetLihtcLayerData({
+    cityBoundaryGeoJSON,
+  }: {
+    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null;
+  }): void {
+    useEffect(() => {
+      fetchAndFilterLayerData({
+        url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/LIHTC.geojson',
+        cityBoundaryGeoJSON,
+        _setShowLayer: setShowLihtc,
+        setLayerData: setLihtcData,
+        tolerance: 0.05,
+      })
+    }, [cityBoundaryGeoJSON])
+  }
+
+  function useEffectSetSchoolLayerData({
+    cityBoundaryGeoJSON,
+  }: {
+    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null
+  }): void {
+    useEffect(() => {
+      fetchAndFilterLayerData({
+        url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SchoolSites.geojson',
+        cityBoundaryGeoJSON,
+        _setShowLayer: setShowSchool,
+        setLayerData: setSchoolData,
+        tolerance: 0.05,
+      })
+    }, [cityBoundaryGeoJSON])
+  }
+
+  function useEffectTransitStops(): void {
+    useLayerGroupEffect({
+      map,
+      data: transitStopsData,
+      showLayer: showTransitStops,
+      layerGroupName: 'transitStopsLayerGroup',
+      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/vehicles.png',
+    })
+  }
 
   function useEffectParksAndRecreation(): void {
     useLayerGroupEffect({
@@ -508,6 +585,26 @@ const MapInner = (): JSX.Element => {
       showLayer: showHealthcareFacilities,
       layerGroupName: 'healthcareFacilitiesLayerGroup',
       iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/first-aid-kit.png',
+    })
+  }
+
+  function useEffectLihtc(): void {
+    useLayerGroupEffect({
+      map,
+      data: lihtcData,
+      showLayer: showLihtc,
+      layerGroupName: 'lihtcLayerGroup',
+      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/home.png',
+    })
+  }
+
+  function useEffectSchool(): void {
+    useLayerGroupEffect({
+      map,
+      data: schoolsData,
+      showLayer: showSchool,
+      layerGroupName: 'schoolLayerGroup',
+      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/school-bag.png',
     })
   }
 }

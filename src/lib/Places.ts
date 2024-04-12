@@ -17,39 +17,39 @@ export const Places: PlacesType = [
   {
     position: [37.8044, -122.2712], // Oakland coordinates
     category: Category.CAT1,
-  },
-  {
-    position: [37.7652, -122.2417], // Alameda coordinates
-    category: Category.CAT1,
-  },
-  {
-    position: [37.873, -122.2728], // Berkeley coordinates
-    category: Category.CAT1,
-  },
-  {
-    position: [37.8225, -122.2992], // Emeryville coordinates
-    category: Category.CAT1,
-  },
-  {
-    position: [37.7233, -121.8842], // San Leandro coordinates
-    category: Category.CAT1,
-  },
-  {
-    position: [37.8722, -122.2903], // Albany coordinates
-    category: Category.CAT1,
-  },
-  {
-    position: [37.6303, -122.0836], // Hayward coordinates
-    category: Category.CAT1,
-  },
-  {
-    position: [37.5503, -122.1], // Fremont coordinates
-    category: Category.CAT1,
-  },
-  {
-    position: [37.6897, -121.7897], // Livermore coordinates
-    category: Category.CAT1,
-  },
+  }
+  // {
+  //   position: [37.7652, -122.2417], // Alameda coordinates
+  //   category: Category.CAT1,
+  // },
+  // {
+  //   position: [37.873, -122.2728], // Berkeley coordinates
+  //   category: Category.CAT1,
+  // },
+  // {
+  //   position: [37.8225, -122.2992], // Emeryville coordinates
+  //   category: Category.CAT1,
+  // },
+  // {
+  //   position: [37.7233, -121.8842], // San Leandro coordinates
+  //   category: Category.CAT1,
+  // },
+  // {
+  //   position: [37.8722, -122.2903], // Albany coordinates
+  //   category: Category.CAT1,
+  // },
+  // {
+  //   position: [37.6303, -122.0836], // Hayward coordinates
+  //   category: Category.CAT1,
+  // },
+  // {
+  //   position: [37.5503, -122.1], // Fremont coordinates
+  //   category: Category.CAT1,
+  // },
+  // {
+  //   position: [37.6897, -121.7897], // Livermore coordinates
+  //   category: Category.CAT1,
+  // },
   // {
   //   position: [37.8319, -122.2505], // Rockridge neighborhood
   //   category: Category.CAT2,
