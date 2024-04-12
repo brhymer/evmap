@@ -65,8 +65,31 @@ const Home = () => (
         <h3 className="text-3xl mb-16">EV Equity Mapping Platform</h3>
         <span>
           {' '}
-          This tool is designed as a free, open-access platform to inform local government and stakeholder
-          decision making on EV and mobility infrastructure investments.{' '}
+          <p>
+            This tool is designed as a free, open-access platform to inform local government and stakeholder
+            decision making on EV and mobility infrastructure investments. The tool uses a pixel-grid approach
+            to integrate multiple data sets into &quot;priority&quot; and &quot;feasibility&quot; layers to
+            identify best-fit locations to prioritize in planning processes. Users can adjust the content of
+            these layers via intensity sliders and on/off toggles, for example:
+          </p>{' '}
+          <br />
+          <ol>
+            <li>
+              - CalEnviroScreen4.0 percentile: slide to define the range of CalEnviroScreen percentile scores
+              include in the &quot;priority&quot; pixel set. A higher range (e.g., 70-100) will limit the set
+              scoring highest across the CES4.0 environmental vulnerability indicators.
+            </li>
+            <li>
+              - Walk Score: L2 charger: slide to reflect existing access to public Level 2 chargers. A lower
+              range will exclude areas with current access.
+            </li>
+            <li>
+              - Grid Capacity: toggle on to include only areas that are within 200ft of a distribution line
+              with with 600kW available capacity in the &quot;feasible&quot; pixel set.
+            </li>
+          </ol>{' '}
+          This tool is a demonstration using data for the City of Oakland; more data layers, functions, and
+          refinements will be added. Click the &quot;Map&quot; link below to explore the demo.{' '}
         </span>
         <footer className="mt-16 flex justify-between p-3 rounded bg-light text-sm">
           {' '}
