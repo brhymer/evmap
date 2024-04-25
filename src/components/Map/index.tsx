@@ -47,6 +47,19 @@ import useMarkerData from './useMarkerData'
 
 export type Range = [number, number]
 
+interface MapProps {
+  cityConfig: {
+    boundaryUrl: string
+    priorityDataUrl: string
+    feasibleDataUrl: string
+    transitStopsUrl?: string
+    parksAndRecreationUrl?: string
+    healthcareFacilitiesUrl?: string
+    lihtcUrl?: string
+    schoolsUrl?: string
+  }
+}
+
 interface UseLayerGroupEffectParams {
   map: any
   data: GeoJSONData | null
@@ -69,7 +82,7 @@ export type DataConfig = {
   togglePgeFilterActive: boolean
 }
 
-const MapInner = (): JSX.Element => {
+const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   const [priorityData, setPriorityData] = useState<FeatureCollection<
     Polygon | MultiPolygon,
     GeoJsonProperties
@@ -154,16 +167,18 @@ const MapInner = (): JSX.Element => {
     simplifiedCityBoundary: null,
   }
 
-  useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON })
-  useEffectSetParksAndRecreationLayerData({ cityBoundaryGeoJSON })
-  useEffectSetHealthcareFacilitiesLayerData({ cityBoundaryGeoJSON })
+  useEffectSetTransitStopsLayerData()
+  useEffectSetParksAndRecreationLayerData()
+  useEffectSetHealthcareFacilitiesLayerData()
+  useEffectSetLihtcLayerData()
+  useEffectSetSchoolLayerData()
+
   useEffectCenterMap()
+
   useEffectTransitStops()
   useEffectParksAndRecreation()
   useEffectHealthCareFacilities()
-  useEffectSetLihtcLayerData({ cityBoundaryGeoJSON }) // Added effect for LIHTC data
   useEffectLihtc()
-  useEffectSetSchoolLayerData({ cityBoundaryGeoJSON })
   useEffectSchool()
 
   const mapHtml = (
@@ -345,15 +360,13 @@ const MapInner = (): JSX.Element => {
 
   async function fetchCityBoundary(): Promise<any> {
     try {
-      const cityBoundaryResponse = await fetch(
-        'https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_city_limits.geojson',
-      )
+      const cityBoundaryResponse = await fetch(cityConfig.boundaryUrl)
       if (!cityBoundaryResponse.ok) {
         throw new Error(`Error fetching city boundary: ${cityBoundaryResponse.statusText}`)
       }
-      const cityBoundaryGeoJSON = await cityBoundaryResponse.json()
-      return cityBoundaryGeoJSON
+      return await cityBoundaryResponse.json()
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Could not fetch city boundary:', error)
       return null
     }
@@ -472,90 +485,74 @@ const MapInner = (): JSX.Element => {
     }, [showLayer, data, map, layerGroupName, iconUrl])
   }
 
-  // function useEffectSetTransitStopsLayerData({ cityBoundaryGeoJSON }: { cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null; }): void {
-  //   useEffect(() => {
-  //     fetchAndFilterLayerData({ url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_bart.geojson', cityBoundaryGeoJSON, _setShowLayer: setShowTransitStops, setLayerData: setTransitStopsData, tolerance: 0.05 });
-  //   }, [cityBoundaryGeoJSON]);
-  // }
-
-  function useEffectSetParksAndRecreationLayerData({
-    cityBoundaryGeoJSON,
-  }: {
-    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null
-  }): void {
+  function useEffectSetParksAndRecreationLayerData() {
     useEffect(() => {
-      fetchAndFilterLayerData({
-        url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/parks_recreation.geojson',
-        cityBoundaryGeoJSON,
-        _setShowLayer: setShowParksAndRecreation,
-        setLayerData: setParksAndRecreationData,
-        tolerance: 0.05,
-      })
-    }, [cityBoundaryGeoJSON])
+      if (cityConfig.parksAndRecreationUrl) {
+        fetchAndFilterLayerData({
+          url: cityConfig.parksAndRecreationUrl,
+          cityBoundaryGeoJSON,
+          _setShowLayer: setShowParksAndRecreation,
+          setLayerData: setParksAndRecreationData,
+          tolerance: 0.05,
+        })
+      }
+    }, [cityConfig.parksAndRecreationUrl, cityBoundaryGeoJSON])
   }
 
-  function useEffectSetHealthcareFacilitiesLayerData({
-    cityBoundaryGeoJSON,
-  }: {
-    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null
-  }): void {
+  function useEffectSetHealthcareFacilitiesLayerData() {
     useEffect(() => {
-      fetchAndFilterLayerData({
-        url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/healthcare_facilities.geojson',
-        cityBoundaryGeoJSON,
-        _setShowLayer: setShowHealthcareFacilities,
-        setLayerData: setHealthcareFacilitiesData,
-        tolerance: 0.05,
-      })
-    }, [cityBoundaryGeoJSON])
+      if (cityConfig.healthcareFacilitiesUrl) {
+        fetchAndFilterLayerData({
+          url: cityConfig.healthcareFacilitiesUrl,
+          cityBoundaryGeoJSON,
+          _setShowLayer: setShowHealthcareFacilities,
+          setLayerData: setHealthcareFacilitiesData,
+          tolerance: 0.05,
+        })
+      }
+    }, [cityConfig.healthcareFacilitiesUrl, cityBoundaryGeoJSON])
   }
 
-  function useEffectSetTransitStopsLayerData({
-    cityBoundaryGeoJSON,
-  }: {
-    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null
-  }): void {
+  function useEffectSetTransitStopsLayerData() {
     useEffect(() => {
-      fetchAndFilterLayerData({
-        url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/bart_oakland.geojson',
-        cityBoundaryGeoJSON,
-        _setShowLayer: setShowTransitStops,
-        setLayerData: setTransitStopsData,
-        tolerance: 0.05,
-      })
-    }, [cityBoundaryGeoJSON])
+      if (cityConfig.transitStopsUrl) {
+        fetchAndFilterLayerData({
+          url: cityConfig.transitStopsUrl,
+          cityBoundaryGeoJSON,
+          _setShowLayer: setShowTransitStops,
+          setLayerData: setTransitStopsData,
+          tolerance: 0.05,
+        })
+      }
+    }, [cityConfig.transitStopsUrl, cityBoundaryGeoJSON])
   }
 
-  function useEffectSetLihtcLayerData({
-    cityBoundaryGeoJSON,
-  }: {
-    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null
-  }): void {
+  function useEffectSetLihtcLayerData() {
     useEffect(() => {
-      fetchAndFilterLayerData({
-        url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/LIHTC.geojson',
-        cityBoundaryGeoJSON,
-        _setShowLayer: setShowLihtc,
-        setLayerData: setLihtcData,
-        tolerance: 0.05,
-      })
-    }, [cityBoundaryGeoJSON])
+      if (cityConfig.lihtcUrl) {
+        fetchAndFilterLayerData({
+          url: cityConfig.lihtcUrl,
+          cityBoundaryGeoJSON,
+          _setShowLayer: setShowLihtc,
+          setLayerData: setLihtcData,
+          tolerance: 0.05,
+        })
+      }
+    }, [cityConfig.lihtcUrl, cityBoundaryGeoJSON])
   }
 
-  function useEffectSetSchoolLayerData({
-    cityBoundaryGeoJSON,
-  }: {
-    cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null
-  }): void {
+  function useEffectSetSchoolLayerData() {
     useEffect(() => {
-      fetchAndFilterLayerData({
-        url: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SchoolSites.geojson',
-        cityBoundaryGeoJSON,
-        _setShowLayer: setShowSchool,
-        setLayerData: setSchoolData,
-        tolerance: 0.05,
-      })
-    }, [cityBoundaryGeoJSON])
+      if (cityConfig.schoolsUrl) {
+        fetchAndFilterLayerData({
+          url: cityConfig.schoolsUrl,
+          cityBoundaryGeoJSON,
+          _setShowLayer: setShowSchool,
+          setLayerData: setSchoolData,
+          tolerance: 0.05,
+        })
+      }
+    }, [cityConfig.schoolsUrl, cityBoundaryGeoJSON])
   }
 
   function useEffectTransitStops(): void {
@@ -609,9 +606,9 @@ const MapInner = (): JSX.Element => {
   }
 }
 
-const Map = () => (
+const Map = ({ cityConfig }: MapProps) => (
   <MapContextProvider>
-    <MapInner />
+    <MapInner cityConfig={cityConfig} />
   </MapContextProvider>
 )
 
