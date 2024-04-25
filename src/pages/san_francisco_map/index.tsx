@@ -6,8 +6,8 @@ const MapPage = () => (
   <div>
     <Head>
       <title>EV Charging Locations - Map 🤩</title>
-      <meta property="og:title" content="EV Charging Locations - Map 🤩" key="title" />
-      <meta name="description" content="EV Charging Locations - Map" />
+      <meta property="og:title" content="San Francisco EV Charging Locations - Map" key="title" />
+      <meta name="description" content="San Francisco EV Charging Locations - Map" />
     </Head>
     <Map />
   </div>

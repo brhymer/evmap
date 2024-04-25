@@ -9,17 +9,9 @@ import { AppConfig } from '@lib/AppConfig'
 const Home = () => (
   <div className="container mx-auto max-w-2xl max-md:max-w-none p-3">
     <Head>
-      <title>Jumpstart your new leaflet mapping Project with next.js and typescript 🤩</title>
-      <meta
-        property="og:title"
-        content="Jumpstart your new leaflet mapping Project with next.js and typescript 🤩"
-        key="title"
-      />
-      <meta
-        name="description"
-        content="next-leaflet-starter-typescript is an extensible next.js starter template for the leaflet-maps-react plugin. Written in typescript,
-      visually enhanced by tailwind and lucide-react icons."
-      />
+      <title>EV Equity Mapping Platform</title>
+      <meta property="og:title" content="EV Equity Mapping Platform" key="title" />
+      <meta name="description" content="" />
     </Head>
     <header className="mt-10 items-top gap-4 md:flex">
       {/* <span className="text-primary">
@@ -105,18 +97,15 @@ const Home = () => (
     </section>
     <section className="grid grid-cols-1 md:grid-cols-2">
       <div>
-        <h3 className="text-xl my-5">Demo Content</h3>
+        <br />
         <NavMenu />
       </div>
     </section>
     <footer className="mt-16 flex justify-between p-3 rounded bg-light text-sm">
       <div>
-        2023, some rights reserved <br />
-        <Link
-          href="https://github.com/richard-unterberg/typescript-next-leaflet-starter"
-          className="text-primary"
-        >
-          typescript-next-leaflet-starter
+        Created by Ankita Shanbhag <br />
+        <Link href="https://linkedin.com/in/ankitashanbhag" className="text-primary">
+          Contact Me
         </Link>
       </div>
       <div className="text-primary">

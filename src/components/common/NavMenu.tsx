@@ -19,8 +19,13 @@ const NavMenu = ({ variant = NavMenuVariant.INTRO }: NavMenuProps) => {
 
   return (
     <ul className={`${listStyle}`}>
-      <NavMenuItem href="/" label="Intro" icon={<Home size={navIconSize} />} />
-      <NavMenuItem href="/map" label="Map" icon={<Compass size={navIconSize} />} />
+      <NavMenuItem href="/" label="About the Project" icon={<Home size={navIconSize} />} />
+      <NavMenuItem href="/oakland_map" label="Oakland Map" icon={<Compass size={navIconSize} />} />
+      <NavMenuItem
+        href="/san_francisco_map"
+        label="San Francisco Map"
+        icon={<Compass size={navIconSize} />}
+      />
     </ul>
   )
 }
