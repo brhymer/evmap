@@ -1,3 +1,5 @@
+/* eslint-disable func-names */
+
 /* eslint-disable @typescript-eslint/no-shadow */
 
 /* eslint-disable @next/next/no-img-element */
