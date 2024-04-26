@@ -59,6 +59,7 @@ interface MapProps {
     healthcareFacilitiesUrl?: string
     lihtcUrl?: string
     schoolsUrl?: string
+    position: [number, number]
   }
 }
 
@@ -175,13 +176,15 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   useEffectSetLihtcLayerData()
   useEffectSetSchoolLayerData()
 
-  useEffectCenterMap()
+  // useEffectCenterMap()
 
   useEffectTransitStops()
   useEffectParksAndRecreation()
   useEffectHealthCareFacilities()
   useEffectLihtc()
   useEffectSchool()
+
+  useEffectCenterMap()
 
   const mapHtml = (
     <div>
@@ -210,17 +213,18 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           L={L}
           cityBoundaryGeoJSON={cityBoundaryGeoJSON}
           color="#3388ff"
-          geojsonUrl="https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_priority.geojson"
+          geojsonUrl={cityConfig.priorityDataUrl}
           onDataUpdate={setPriorityData}
           config={priorityDataConfig}
         />
         <DataControls
-          dataControlsTitle="Feasible Pixels"
+          dataControlsTitle="Feasibility Pixels"
           map={map}
           L={L}
           cityBoundaryGeoJSON={cityBoundaryGeoJSON}
           color="#ffa500"
-          geojsonUrl="https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_priority.geojson"
+          geojsonUrl={cityConfig.feasibleDataUrl}
+          //geojsonUrl={cityConfig["feasibleDataUrl"]}
           onDataUpdate={setFeasibleData}
           config={feasibleDataConfig}
         />
@@ -308,7 +312,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
               maxZoom={AppConfig.maxZoom}
               minZoom={AppConfig.minZoom}
             >
-              {!isLoading ? (
+              {/*{!isLoading ? (
                 <>
                   <CenterToMarkerButton
                     center={allMarkersBoundCenter.centerPos}
@@ -336,7 +340,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
               ) : (
                 // eslint-disable-next-line react/jsx-no-useless-fragment
                 <></>
-              )}
+              )}*/}
             </LeafletMapContainer>
           )}
         </div>
@@ -429,15 +433,18 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
 
   function useEffectCenterMap(): void {
     useEffect(() => {
-      if (!allMarkersBoundCenter || !map) return
+      if (!allMarkersBoundCenter || !map || !L) return
 
       const moveEnd = () => {
         map.setMinZoom(allMarkersBoundCenter.minZoom - 1)
         map.off('moveend', moveEnd)
       }
-
       map.setMinZoom(0)
-      map.flyTo(allMarkersBoundCenter.centerPos, allMarkersBoundCenter.minZoom, { animate: false })
+      //map.flyTo(allMarkersBoundCenter.centerPos, allMarkersBoundCenter.minZoom, { animate: false })
+      var jsonGroup = L.geoJson(cityBoundaryGeoJSON)
+      //var bounds = jsonGroup.getBounds()
+      map.flyTo(cityConfig.position, allMarkersBoundCenter.minZoom, { animate: false })
+      map.fitBounds(jsonGroup.getBounds(), { "animate": false })
       map.once('moveend', moveEnd)
     }, [allMarkersBoundCenter, map])
   }
