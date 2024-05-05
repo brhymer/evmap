@@ -13,9 +13,9 @@ const OaklandMapPage = () => {
       'https://ev-charging-mapviewer-assets.s3.amazonaws.com/healthcare_facilities.geojson',
     lihtcUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/LIHTC.geojson',
     schoolsUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SchoolSites.geojson',
-    position: [37.8044, -122.2712],
+    position: [37.8044, -122.2712] as [number, number],
   }
-
+  console.log('oaklandConfig', oaklandConfig)
   return (
     <div>
       <Head>

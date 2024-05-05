@@ -4,7 +4,7 @@ export interface GeoJSONFeatureProperties {
   pop: number
   CIscoreP: number
   'Multi-Family Housing Residents': number
-  'Renters': number
+  Renters: number
   chg_walk: number
   chg_drive: number
   nevi: number

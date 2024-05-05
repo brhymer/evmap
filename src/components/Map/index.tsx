@@ -224,7 +224,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON={cityBoundaryGeoJSON}
           color="#ffa500"
           geojsonUrl={cityConfig.feasibleDataUrl}
-          //geojsonUrl={cityConfig["feasibleDataUrl"]}
+          // geojsonUrl={cityConfig["feasibleDataUrl"]}
           onDataUpdate={setFeasibleData}
           config={feasibleDataConfig}
         />
@@ -312,7 +312,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
               maxZoom={AppConfig.maxZoom}
               minZoom={AppConfig.minZoom}
             >
-              {/*{!isLoading ? (
+              {/* {!isLoading ? (
                 <>
                   <CenterToMarkerButton
                     center={allMarkersBoundCenter.centerPos}
@@ -340,7 +340,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
               ) : (
                 // eslint-disable-next-line react/jsx-no-useless-fragment
                 <></>
-              )}*/}
+              )} */}
             </LeafletMapContainer>
           )}
         </div>
@@ -440,11 +440,11 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
         map.off('moveend', moveEnd)
       }
       map.setMinZoom(0)
-      //map.flyTo(allMarkersBoundCenter.centerPos, allMarkersBoundCenter.minZoom, { animate: false })
-      var jsonGroup = L.geoJson(cityBoundaryGeoJSON)
-      //var bounds = jsonGroup.getBounds()
-      map.flyTo(cityConfig.position, allMarkersBoundCenter.minZoom, { animate: false })
-      map.fitBounds(jsonGroup.getBounds(), { "animate": false })
+      // map.flyTo(allMarkersBoundCenter.centerPos, allMarkersBoundCenter.minZoom, { animate: false })
+      // var bounds = jsonGroup.getBounds()
+      map.once('moveend', moveEnd)
+      map.flyTo(cityConfig.position as L.LatLngExpression, allMarkersBoundCenter.minZoom, { animate: false })
+      // map.fitBounds(jsonGroup.getBounds() as L.LatLngBoundsExpression, { animate: false })
       map.once('moveend', moveEnd)
     }, [allMarkersBoundCenter, map])
   }

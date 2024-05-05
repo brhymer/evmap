@@ -92,7 +92,9 @@ const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
           </div>
 
           <div className="config-section">
-            <h2><b>Feasibility Data</b></h2>
+            <h2>
+              <b>Feasibility Data</b>
+            </h2>
             <div className="checkbox-column">
               {Object.entries(feasibleDataConfig).map(([key, value]) => (
                 <label key={key} className="config-item">

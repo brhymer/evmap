@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
 /* eslint-disable react/button-has-type */
@@ -54,40 +56,40 @@ export const DataControls: React.FC<DataControlsProps> = ({
   })
   const [showColorPicker, setShowColorPicker] = useState(false)
 
-  const [popRange, setPopRange] = useState<Range>([0, 0]);
-  const [ciScoreRange, setCiScoreRange] = useState<Range>([0, 0]);
-  const [levRange, setLevRange] = useState<Range>([0, 0]);
-  const [multiFaRange, setMultiFaRange] = useState<Range>([0, 0]);
-  const [rentersRange, setRentersRange] = useState<Range>([0, 0]);
-  const [walkableRange, setWalkableRange] = useState<Range>([0, 0]);
-  const [drivableRange, setDrivableRange] = useState<Range>([0, 0]);
-  const [commercialRange, setCommercialRange] = useState<Range>([0, 0]);
-  const [residentialRange, setResidentialRange] = useState<Range>([0, 0]);
-  const [neviFilterActive, setNeviFilterActive] = useState({ zero: true, one: true });
-  const [pgeRange, setPgeRange] = useState<Range>([0, 0]);
-  //const [pgeFilterActive, setPgeFilterActive] = useState({ zero: true, one: true });
-  const popMax = 200;
-  const ciScoreMax = 100;
-  const levMax = 2000;
-  const multiFaMax = 100;
-  const rentersMax = 100;
-  const walkableMax = 100;
-  const drivableMax = 100;
-  const commercialMax = 100;
-  const residentialMax = 200;
-  const pgeMax = 3000;
+  const [popRange, setPopRange] = useState<Range>([0, 0])
+  const [ciScoreRange, setCiScoreRange] = useState<Range>([0, 0])
+  const [levRange, setLevRange] = useState<Range>([0, 0])
+  const [multiFaRange, setMultiFaRange] = useState<Range>([0, 0])
+  const [rentersRange, setRentersRange] = useState<Range>([0, 0])
+  const [walkableRange, setWalkableRange] = useState<Range>([0, 0])
+  const [drivableRange, setDrivableRange] = useState<Range>([0, 0])
+  const [commercialRange, setCommercialRange] = useState<Range>([0, 0])
+  const [residentialRange, setResidentialRange] = useState<Range>([0, 0])
+  const [neviFilterActive, setNeviFilterActive] = useState({ zero: true, one: true })
+  const [pgeRange, setPgeRange] = useState<Range>([0, 0])
+  // const [pgeFilterActive, setPgeFilterActive] = useState({ zero: true, one: true });
+  const popMax = 200
+  const ciScoreMax = 100
+  const levMax = 2000
+  const multiFaMax = 100
+  const rentersMax = 100
+  const walkableMax = 100
+  const drivableMax = 100
+  const commercialMax = 100
+  const residentialMax = 200
+  const pgeMax = 3000
   const resetSliders = () => {
-    setPopRange([0, popMax]);
-    setCiScoreRange([0, ciScoreMax]);
-    setLevRange([0, levMax]);
-    setMultiFaRange([0, multiFaMax]);
-    setRentersRange([0, rentersMax]);
-    setWalkableRange([0, walkableMax]);
-    setDrivableRange([0, drivableMax]);
-    setCommercialRange([0, commercialMax]);
-    setResidentialRange([0, residentialMax]);
-    setPgeRange([0, pgeMax]);
-  };
+    setPopRange([0, popMax])
+    setCiScoreRange([0, ciScoreMax])
+    setLevRange([0, levMax])
+    setMultiFaRange([0, multiFaMax])
+    setRentersRange([0, rentersMax])
+    setWalkableRange([0, walkableMax])
+    setDrivableRange([0, drivableMax])
+    setCommercialRange([0, commercialMax])
+    setResidentialRange([0, residentialMax])
+    setPgeRange([0, pgeMax])
+  }
 
   const {
     togglePopRange,
@@ -128,19 +130,32 @@ export const DataControls: React.FC<DataControlsProps> = ({
         return {
           ...data,
           features: data.features.filter((feature: GeoJSONFeature) => {
-            const props = feature.properties;
-            const withinPropertyCriteria = props['pop'] >= popRange[0] && (props['pop'] <= popRange[1] || popRange[1] == popMax) &&
-              props.CIscoreP >= ciScoreRange[0] && (props.CIscoreP <= ciScoreRange[1] || ciScoreRange[1] == ciScoreMax) &&
-              props['lev_10000'] >= levRange[0] && (props['lev_10000'] <= levRange[1] || levRange[1] == levMax) &&
-              props['Multi-Family Housing Residents'] >= multiFaRange[0] && (props['Multi-Family Housing Residents'] <= multiFaRange[1] || multiFaRange[1] == multiFaMax) &&
-              props['Renters'] >= rentersRange[0] && (props['Renters'] <= rentersRange[1] || rentersRange[1] == rentersMax) &&
-              props['zoning_commercial'] >= commercialRange[0] / 100 && (props['zoning_commercial'] <= commercialRange[1] / 100 || commercialRange[1] == commercialMax) &&
-              props['zoning_residential_multi_family'] >= residentialRange[0] / 100 && (props['zoning_residential_multi_family'] <= residentialRange[1] / 100 || residentialRange[1] == residentialMax) &&
-              props.chg_walk >= walkableRange[0] && (props.chg_walk <= walkableRange[1] || walkableRange[1] == walkableMax) &&
-              props.chg_drive >= drivableRange[0] && (props.chg_drive <= drivableRange[1] || drivableRange[1] == drivableMax) &&
+            const props = feature.properties
+            const withinPropertyCriteria =
+              props.pop >= popRange[0] &&
+              (props.pop <= popRange[1] || popRange[1] === popMax) &&
+              props.CIscoreP >= ciScoreRange[0] &&
+              (props.CIscoreP <= ciScoreRange[1] || ciScoreRange[1] === ciScoreMax) &&
+              props.lev_10000 >= levRange[0] &&
+              (props.lev_10000 <= levRange[1] || levRange[1] === levMax) &&
+              props['Multi-Family Housing Residents'] >= multiFaRange[0] &&
+              (props['Multi-Family Housing Residents'] <= multiFaRange[1] ||
+                multiFaRange[1] === multiFaMax) &&
+              props.Renters >= rentersRange[0] &&
+              (props.Renters <= rentersRange[1] || rentersRange[1] === rentersMax) &&
+              props.zoning_commercial >= commercialRange[0] / 100 &&
+              (props.zoning_commercial <= commercialRange[1] / 100 || commercialRange[1] === commercialMax) &&
+              props.zoning_residential_multi_family >= residentialRange[0] / 100 &&
+              (props.zoning_residential_multi_family <= residentialRange[1] / 100 ||
+                residentialRange[1] === residentialMax) &&
+              props.chg_walk >= walkableRange[0] &&
+              (props.chg_walk <= walkableRange[1] || walkableRange[1] === walkableMax) &&
+              props.chg_drive >= drivableRange[0] &&
+              (props.chg_drive <= drivableRange[1] || drivableRange[1] === drivableMax) &&
               ((neviFilterActive.zero && props.nevi === 0) || (neviFilterActive.one && props.nevi === 1)) &&
-              props.pge >= pgeRange[0] && (props.pge <= pgeRange[1] || pgeRange[1] == pgeMax);
-              //((pgeFilterActive.zero && props.pge === 0) || (pgeFilterActive.one && props.pge === 1));
+              props.pge >= pgeRange[0] &&
+              (props.pge <= pgeRange[1] || pgeRange[1] === pgeMax)
+            // ((pgeFilterActive.zero && props.pge === 0) || (pgeFilterActive.one && props.pge === 1));
 
             if (!withinPropertyCriteria) {
               return false
@@ -179,9 +194,19 @@ export const DataControls: React.FC<DataControlsProps> = ({
       }
       fetchAndFilterData()
     }, [
-      popRange, ciScoreRange, levRange, multiFaRange, rentersRange, walkableRange, drivableRange,
-      neviFilterActive, pgeRange, commercialRange, residentialRange, cityBoundaryGeoJSON
-    ]);
+      popRange,
+      ciScoreRange,
+      levRange,
+      multiFaRange,
+      rentersRange,
+      walkableRange,
+      drivableRange,
+      neviFilterActive,
+      pgeRange,
+      commercialRange,
+      residentialRange,
+      cityBoundaryGeoJSON,
+    ])
   }
 
   function useEffectLayerData() {
@@ -239,7 +264,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
               <div className="sketch-picker">
                 <SketchPicker
                   color={layerStyle.color}
-                  onChangeComplete={(color: { hex: any }) =>
+                  onChangeComplete={(color: { hex: unknown }) =>
                     setLayerStyle({ ...layerStyle, color: color.hex })
                   }
                 />
@@ -267,10 +292,10 @@ export const DataControls: React.FC<DataControlsProps> = ({
                       <GeoJSONLayer data={layerData} style={{ color: color }} />
                     )} */}
           {/* Population Slider */}
-            {
-            togglePopRange && <label>
+          {togglePopRange && (
+            <label>
               <br />
-              Population in pixel: {popRange[0]} to {(popRange[1]==200) ? "∞" : popRange[1]}
+              Population in pixel: {popRange[0]} to {popRange[1] === 200 ? '∞' : popRange[1]}
               <Slider
                 min={0}
                 max={200}
@@ -278,11 +303,27 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 onChange={setPopRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
-                renderThumb={(props: JSX.IntrinsicAttributes & React.ClassAttributes<HTMLDivElement> & React.HTMLAttributes<HTMLDivElement>, state: { valueNow: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }) => <div {...props}>{state.valueNow}</div>}
+                renderThumb={(
+                  props: JSX.IntrinsicAttributes &
+                    React.ClassAttributes<HTMLDivElement> &
+                    React.HTMLAttributes<HTMLDivElement>,
+                  state: {
+                    valueNow:
+                      | string
+                      | number
+                      | boolean
+                      | React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>
+                      | React.ReactFragment
+                      | React.ReactPortal
+                      | null
+                      | undefined
+                  },
+                ) => <div {...props}>{state.valueNow}</div>}
                 pearling
-                minDistance={5} />
+                minDistance={5}
+              />
             </label>
-            }
+          )}
           {/* CI Score Slider */}
           {toggleCiRange && (
             <label>
@@ -351,9 +392,9 @@ export const DataControls: React.FC<DataControlsProps> = ({
             </label>
           )}
           {/* Multi-Fa Slider */}
-            {toggleMultiFaRange && (<label>
-              <br />
-              # Multifamily residents: {multiFaRange[0]} to {multiFaRange[1]}
+          {toggleMultiFaRange && (
+            <label>
+              <br /># Multifamily residents: {multiFaRange[0]} to {multiFaRange[1]}
               <Slider
                 min={0}
                 max={100}
@@ -445,65 +486,115 @@ export const DataControls: React.FC<DataControlsProps> = ({
                   },
                 ) => <div {...props}>{state.valueNow}</div>}
                 pearling
-                minDistance={0} />
+                minDistance={0}
+              />
             </label>
           )}
           {/* Drivable Slider */}
-          {
-            toggleDrivableRange && <label>
-            <br />
-            Drivable: {drivableRange[0]} to {drivableRange[1]}
-            <Slider
-              min={0}
-              max={100}
-              value={drivableRange}
-              onChange={setDrivableRange}
-              thumbClassName="slider-thumb"
-              trackClassName="slider-track"
-              renderThumb={(props: JSX.IntrinsicAttributes & React.ClassAttributes<HTMLDivElement> & React.HTMLAttributes<HTMLDivElement>, state: { valueNow: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }) => <div {...props}>{state.valueNow}</div>}
-              pearling
-              minDistance={0} />
-          </label>
-          }
-          {/* Commercial Zoning Slider */}
-          {
-            toggleCommercialRange && <label>
-            <br />
-            Commercial Zoning %: {commercialRange[0]} to {commercialRange[1]}
-            <Slider
-              min={0}
-              max={100}
-              value={commercialRange}
-              onChange={setCommercialRange}
-              thumbClassName="slider-thumb"
-              trackClassName="slider-track"
-              renderThumb={(props: JSX.IntrinsicAttributes & React.ClassAttributes<HTMLDivElement> & React.HTMLAttributes<HTMLDivElement>, state: { valueNow: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }) => <div {...props}>{state.valueNow}</div>}
-              pearling
-              minDistance={5} />
-          </label>
-          }
-          {/* Residential Zoning Slider */}
-          {
-            toggleResidentialRange && <label>
-            <br />
-            Multifamily Residential Zoning %: {residentialRange[0]} to {residentialRange[1]}
-            <Slider
-              min={0}
-              max={100}
-              value={residentialRange}
-              onChange={setResidentialRange}
-              thumbClassName="slider-thumb"
-              trackClassName="slider-track"
-              renderThumb={(props: JSX.IntrinsicAttributes & React.ClassAttributes<HTMLDivElement> & React.HTMLAttributes<HTMLDivElement>, state: { valueNow: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }) => <div {...props}>{state.valueNow}</div>}
-              pearling
-              minDistance={5} />
-          </label>
-          }
-          {/* Pge Slider */}
-          {
-            togglePgeFilterActive && <label>
+          {toggleDrivableRange && (
+            <label>
               <br />
-              PG&E load capacity through pixel (kW): {pgeRange[0]} to {(pgeRange[1]==pgeMax) ? "∞" : pgeRange[1]}
+              Drivable: {drivableRange[0]} to {drivableRange[1]}
+              <Slider
+                min={0}
+                max={100}
+                value={drivableRange}
+                onChange={setDrivableRange}
+                thumbClassName="slider-thumb"
+                trackClassName="slider-track"
+                renderThumb={(
+                  props: JSX.IntrinsicAttributes &
+                    React.ClassAttributes<HTMLDivElement> &
+                    React.HTMLAttributes<HTMLDivElement>,
+                  state: {
+                    valueNow:
+                      | string
+                      | number
+                      | boolean
+                      | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+                      | React.ReactFragment
+                      | React.ReactPortal
+                      | null
+                      | undefined
+                  },
+                ) => <div {...props}>{state.valueNow}</div>}
+                pearling
+                minDistance={0}
+              />
+            </label>
+          )}
+          {/* Commercial Zoning Slider */}
+          {toggleCommercialRange && (
+            <label>
+              <br />
+              Commercial Zoning %: {commercialRange[0]} to {commercialRange[1]}
+              <Slider
+                min={0}
+                max={100}
+                value={commercialRange}
+                onChange={setCommercialRange}
+                thumbClassName="slider-thumb"
+                trackClassName="slider-track"
+                renderThumb={(
+                  props: JSX.IntrinsicAttributes &
+                    React.ClassAttributes<HTMLDivElement> &
+                    React.HTMLAttributes<HTMLDivElement>,
+                  state: {
+                    valueNow:
+                      | string
+                      | number
+                      | boolean
+                      | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+                      | React.ReactFragment
+                      | React.ReactPortal
+                      | null
+                      | undefined
+                  },
+                ) => <div {...props}>{state.valueNow}</div>}
+                pearling
+                minDistance={5}
+              />
+            </label>
+          )}
+          {/* Residential Zoning Slider */}
+          {toggleResidentialRange && (
+            <label>
+              <br />
+              Multifamily Residential Zoning %: {residentialRange[0]} to {residentialRange[1]}
+              <Slider
+                min={0}
+                max={100}
+                value={residentialRange}
+                onChange={setResidentialRange}
+                thumbClassName="slider-thumb"
+                trackClassName="slider-track"
+                renderThumb={(
+                  props: JSX.IntrinsicAttributes &
+                    React.ClassAttributes<HTMLDivElement> &
+                    React.HTMLAttributes<HTMLDivElement>,
+                  state: {
+                    valueNow:
+                      | string
+                      | number
+                      | boolean
+                      | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+                      | React.ReactFragment
+                      | React.ReactPortal
+                      | null
+                      | undefined
+                  },
+                ) => <div {...props}>{state.valueNow}</div>}
+                pearling
+                minDistance={5}
+              />
+            </label>
+          )}
+          {/* Pge Slider */}
+          {togglePgeFilterActive && (
+            <label>
+              <br />
+              PG&E load capacity through pixel (kW): {pgeRange[0]} to{' '}
+              {pgeRange[1] === pgeMax ? '∞' : pgeRange[1]}
               <Slider
                 min={0}
                 max={pgeMax}
@@ -511,14 +602,30 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 onChange={setPgeRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
-                renderThumb={(props: JSX.IntrinsicAttributes & React.ClassAttributes<HTMLDivElement> & React.HTMLAttributes<HTMLDivElement>, state: { valueNow: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }) => <div {...props}>{state.valueNow}</div>}
+                renderThumb={(
+                  props: JSX.IntrinsicAttributes &
+                    React.ClassAttributes<HTMLDivElement> &
+                    React.HTMLAttributes<HTMLDivElement>,
+                  state: {
+                    valueNow:
+                      | string
+                      | number
+                      | boolean
+                      | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+                      | React.ReactFragment
+                      | React.ReactPortal
+                      | null
+                      | undefined
+                  },
+                ) => <div {...props}>{state.valueNow}</div>}
                 pearling
-                minDistance={5} />
+                minDistance={5}
+              />
             </label>
-            }
+          )}
           <br />
-          {
-            toggleNeviFilterActive && <><div className="checkbox-group">
+          {toggleNeviFilterActive && (
+            <div className="checkbox-group">
               {/* NEVI Checkboxes */}
               <div className="checkbox-column">
                 <br />
@@ -539,10 +646,9 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 </label>
               </div>
             </div>
-            </>
-            }
-            {
-            //togglePgeFilterActive && <><div className="checkbox-group">
+          )}
+          {
+            // togglePgeFilterActive && <><div className="checkbox-group">
             //    {/* PGE Checkboxes */}
             //    <div className="checkbox-column">
             //      <br />
