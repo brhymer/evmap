@@ -12,7 +12,8 @@ const SanFranciscoMapPage = () => {
     healthcareFacilitiesUrl:
       'https://ev-charging-mapviewer-assets.s3.amazonaws.com/San_Francisco_Healthcare_Facilities.geojson',
     lihtcUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SF_LIHTC_converted.geojson',
-    schoolsUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SchoolSites1920_-8485697552074815990.geojson',
+    schoolsUrl:
+      'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SchoolSites1920_-8485697552074815990.geojson',
     libraryUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/sf_libraries.geojson',
   }
 
