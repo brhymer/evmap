@@ -59,7 +59,6 @@ interface MapProps {
     healthcareFacilitiesUrl?: string
     lihtcUrl?: string
     schoolsUrl?: string
-    position: [number, number]
   }
 }
 
@@ -224,7 +223,6 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON={cityBoundaryGeoJSON}
           color="#ffa500"
           geojsonUrl={cityConfig.feasibleDataUrl}
-          // geojsonUrl={cityConfig["feasibleDataUrl"]}
           onDataUpdate={setFeasibleData}
           config={feasibleDataConfig}
         />
@@ -433,19 +431,9 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
 
   function useEffectCenterMap(): void {
     useEffect(() => {
-      if (!allMarkersBoundCenter || !map || !L) return
-
-      const moveEnd = () => {
-        map.setMinZoom(allMarkersBoundCenter.minZoom - 1)
-        map.off('moveend', moveEnd)
-      }
-      map.setMinZoom(0)
-      // map.flyTo(allMarkersBoundCenter.centerPos, allMarkersBoundCenter.minZoom, { animate: false })
-      // var bounds = jsonGroup.getBounds()
-      map.once('moveend', moveEnd)
-      map.flyTo(cityConfig.position as L.LatLngExpression, allMarkersBoundCenter.minZoom, { animate: false })
-      // map.fitBounds(jsonGroup.getBounds() as L.LatLngBoundsExpression, { animate: false })
-      map.once('moveend', moveEnd)
+      if (!map || !L || !cityBoundaryGeoJSON || !cityConfig) return
+      const jsonGroup = L.geoJson(cityBoundaryGeoJSON)
+      map.fitBounds(jsonGroup.getBounds())
     }, [allMarkersBoundCenter, map])
   }
 

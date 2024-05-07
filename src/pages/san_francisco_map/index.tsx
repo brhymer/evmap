@@ -13,8 +13,6 @@ const SanFranciscoMapPage = () => {
       'https://ev-charging-mapviewer-assets.s3.amazonaws.com/healthcare_facilities.geojson',
     lihtcUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/LIHTC.geojson',
     schoolsUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SchoolSites.geojson',
-    position: [37.7749, -122.4194] as [number, number],
-    // 🚨 position for San Francisco needs to be updated
   }
 
   return (

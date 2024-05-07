@@ -155,8 +155,6 @@ export const DataControls: React.FC<DataControlsProps> = ({
               ((neviFilterActive.zero && props.nevi === 0) || (neviFilterActive.one && props.nevi === 1)) &&
               props.pge >= pgeRange[0] &&
               (props.pge <= pgeRange[1] || pgeRange[1] === pgeMax)
-            // ((pgeFilterActive.zero && props.pge === 0) || (pgeFilterActive.one && props.pge === 1));
-
             if (!withinPropertyCriteria) {
               return false
             }
