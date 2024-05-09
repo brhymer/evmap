@@ -11,8 +11,9 @@ const OaklandMapPage = () => {
     parksAndRecreationUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/parks_recreation.geojson',
     healthcareFacilitiesUrl:
       'https://ev-charging-mapviewer-assets.s3.amazonaws.com/healthcare_facilities.geojson',
-    lihtcUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/LIHTC.geojson',
-    schoolsUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SchoolSites.geojson',
+    lihtcUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/LIHTC_Oakland_converted.geojson',
+    schoolsUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/Oakland_Schools.geojson',
+    libraryUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_libraries.geojson',
   }
 
   return (

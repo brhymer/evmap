@@ -58,6 +58,7 @@ interface MapProps {
     parksAndRecreationUrl?: string
     healthcareFacilitiesUrl?: string
     lihtcUrl?: string
+    libraryUrl?: string
     schoolsUrl?: string
   }
 }
@@ -123,6 +124,8 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   const [transitStopsData, setTransitStopsData] = useState<GeoJSONData | null>(null)
   const [showLihtc, setShowLihtc] = useState(false)
   const [lihtcData, setLihtcData] = useState<GeoJSONData | null>(null)
+  const [showLibrary, setShowLibrary] = useState(false)
+  const [LibraryData, setLibraryData] = useState<GeoJSONData | null>(null)
   const [showSchool, setShowSchool] = useState(false)
   const [schoolsData, setSchoolData] = useState<GeoJSONData | null>(null)
   const [showParksAndRecreation, setShowParksAndRecreation] = useState(false)
@@ -176,6 +179,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   useEffectSetParksAndRecreationLayerData()
   useEffectSetHealthcareFacilitiesLayerData()
   useEffectSetLihtcLayerData()
+  useEffectSetLibraryLayerData()
   useEffectSetSchoolLayerData()
 
   useEffectCenterMap()
@@ -184,6 +188,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   useEffectParksAndRecreation()
   useEffectHealthCareFacilities()
   useEffectLihtc()
+  useEffectLibrary()
   useEffectSchool()
 
   // useEffectCenterMap()
@@ -267,14 +272,18 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
               />
               Healthcare Facilities
             </label>
-            {/* <label>
+            <label>
               <input type="checkbox" checked={showLihtc} onChange={() => setShowLihtc(!showLihtc)} />
               LIHTC properties
-            </label> */}
-            {/* <label>
+            </label>
+            <label>
+              <input type="checkbox" checked={showLibrary} onChange={() => setShowLibrary(!showLibrary)} />
+              Public Library
+            </label>
+            <label>
               <input type="checkbox" checked={showSchool} onChange={() => setShowSchool(!showSchool)} />
               Public schools
-          </label> */}
+            </label>
           </div>
         </div>
         {/* <label>
@@ -542,6 +551,20 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     }, [cityConfig.lihtcUrl, cityBoundaryGeoJSON])
   }
 
+  function useEffectSetLibraryLayerData() {
+    useEffect(() => {
+      if (cityConfig.libraryUrl) {
+        fetchAndFilterLayerData({
+          url: cityConfig.libraryUrl,
+          cityBoundaryGeoJSON,
+          _setShowLayer: setShowLibrary,
+          setLayerData: setLibraryData,
+          tolerance: 0.05,
+        })
+      }
+    }, [cityConfig.libraryUrl, cityBoundaryGeoJSON])
+  }
+
   function useEffectSetSchoolLayerData() {
     useEffect(() => {
       if (cityConfig.schoolsUrl) {
@@ -593,6 +616,16 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       showLayer: showLihtc,
       layerGroupName: 'lihtcLayerGroup',
       iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/home.png',
+    })
+  }
+
+  function useEffectLibrary(): void {
+    useLayerGroupEffect({
+      map,
+      data: LibraryData,
+      showLayer: showLibrary,
+      layerGroupName: 'libraryLayerGroup',
+      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/library.png',
     })
   }
 
