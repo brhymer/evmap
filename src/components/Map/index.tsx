@@ -81,6 +81,7 @@ export type DataConfig = {
   toggleCommercialRange: boolean
   toggleResidentialRange: boolean
   toggleNeviFilterActive: boolean
+  toggleIrsFilterActive: boolean
   togglePgeFilterActive: boolean
 }
 
@@ -141,6 +142,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     toggleCommercialRange: false,
     toggleResidentialRange: false,
     toggleNeviFilterActive: false,
+    toggleIrsFilterActive: false,
     togglePgeFilterActive: false,
   })
   const [feasibleDataConfig, setFeasibleDataConfig] = useState<DataConfig>({
@@ -151,9 +153,10 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     toggleRentersRange: false,
     toggleWalkableRange: false,
     toggleDrivableRange: false,
-    toggleCommercialRange: true,
-    toggleResidentialRange: true,
+    toggleCommercialRange: false,
+    toggleResidentialRange: false,
     toggleNeviFilterActive: true,
+    toggleIrsFilterActive: true,
     togglePgeFilterActive: true,
   })
 
@@ -175,7 +178,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   useEffectSetLihtcLayerData()
   useEffectSetSchoolLayerData()
 
-  // useEffectCenterMap()
+  useEffectCenterMap()
 
   useEffectTransitStops()
   useEffectParksAndRecreation()
@@ -183,7 +186,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   useEffectLihtc()
   useEffectSchool()
 
-  useEffectCenterMap()
+  // useEffectCenterMap()
 
   const mapHtml = (
     <div>
@@ -271,7 +274,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
             {/* <label>
               <input type="checkbox" checked={showSchool} onChange={() => setShowSchool(!showSchool)} />
               Public schools
-            </label> */}
+          </label> */}
           </div>
         </div>
         {/* <label>
@@ -380,7 +383,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     url,
     cityBoundaryGeoJSON,
     setLayerData,
-    tolerance = 0.01,
+    tolerance = 0.00001,
   }: {
     url: RequestInfo | URL
     cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null
@@ -402,7 +405,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       const response = await fetch(url)
       let dataJson = await response.json()
 
-      if (cached.simplifiedCityBoundary != null || cached.cityBoundaryGeoJSON !== cityBoundaryGeoJSON) {
+      if (cached.simplifiedCityBoundary === null || cached.cityBoundaryGeoJSON !== cityBoundaryGeoJSON) {
         if (cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0) {
           cached.simplifiedCityBoundary = turf.simplify(cityBoundaryGeoJSON.features[0], {
             tolerance,
@@ -434,6 +437,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       if (!map || !L || !cityBoundaryGeoJSON || !cityConfig) return
       const jsonGroup = L.geoJson(cityBoundaryGeoJSON)
       map.fitBounds(jsonGroup.getBounds())
+      // map.zoomIn()
     }, [allMarkersBoundCenter, map])
   }
 
@@ -490,7 +494,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowParksAndRecreation,
           setLayerData: setParksAndRecreationData,
-          tolerance: 0.05,
+          tolerance: 0.00001,
         })
       }
     }, [cityConfig.parksAndRecreationUrl, cityBoundaryGeoJSON])
@@ -504,7 +508,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowHealthcareFacilities,
           setLayerData: setHealthcareFacilitiesData,
-          tolerance: 0.05,
+          tolerance: 0.00001,
         })
       }
     }, [cityConfig.healthcareFacilitiesUrl, cityBoundaryGeoJSON])
@@ -518,7 +522,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowTransitStops,
           setLayerData: setTransitStopsData,
-          tolerance: 0.05,
+          tolerance: 0.0001,
         })
       }
     }, [cityConfig.transitStopsUrl, cityBoundaryGeoJSON])
@@ -532,7 +536,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowLihtc,
           setLayerData: setLihtcData,
-          tolerance: 0.05,
+          tolerance: 0.00001,
         })
       }
     }, [cityConfig.lihtcUrl, cityBoundaryGeoJSON])
@@ -546,7 +550,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowSchool,
           setLayerData: setSchoolData,
-          tolerance: 0.05,
+          tolerance: 0.00001,
         })
       }
     }, [cityConfig.schoolsUrl, cityBoundaryGeoJSON])

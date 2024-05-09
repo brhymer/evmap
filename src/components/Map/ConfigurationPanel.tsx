@@ -21,13 +21,14 @@ const titlesMap = {
   togglePopRange: 'Population in pixels',
   toggleCiRange: 'CES Percentile',
   toggleLevRange: 'LEVs/10000',
-  toggleMultiFaRange: '# Multi-Family',
+  toggleMultiFaRange: '# Multi-Family residents',
   toggleRentersRange: '# Renters',
   toggleWalkableRange: 'Walkable',
   toggleDrivableRange: 'Drivable',
   toggleCommercialRange: 'Commercial Zoning %',
   toggleResidentialRange: 'Multifamily Residential Zoning %',
   toggleNeviFilterActive: 'NEVI Eligible',
+  toggleIrsFilterActive: 'IRS 30C Eligible',
   togglePgeFilterActive: 'Grid Capacity',
 }
 
