@@ -82,6 +82,7 @@ export type DataConfig = {
   toggleCommercialRange: boolean
   toggleResidentialRange: boolean
   toggleNeviFilterActive: boolean
+  toggleirs30cFilterActive: boolean
   togglePgeFilterActive: boolean
 }
 
@@ -144,6 +145,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     toggleCommercialRange: false,
     toggleResidentialRange: false,
     toggleNeviFilterActive: false,
+    toggleirs30cFilterActive: false,
     togglePgeFilterActive: false,
   })
   const [feasibleDataConfig, setFeasibleDataConfig] = useState<DataConfig>({
@@ -157,6 +159,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     toggleCommercialRange: true,
     toggleResidentialRange: true,
     toggleNeviFilterActive: true,
+    toggleirs30cFilterActive: true,
     togglePgeFilterActive: true,
   })
 

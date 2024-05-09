@@ -8,7 +8,7 @@ const SanFranciscoMapPage = () => {
     priorityDataUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_priority.geojson',
     feasibleDataUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_feasible.geojson',
     transitStopsUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/bart_oakland.geojson',
-    parksAndRecreationUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/parks_recreation.geojson',
+    parksAndRecreationUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SF_parks-2.geojson',
     healthcareFacilitiesUrl:
       'https://ev-charging-mapviewer-assets.s3.amazonaws.com/San_Francisco_Healthcare_Facilities.geojson',
     lihtcUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SF_LIHTC_converted.geojson',

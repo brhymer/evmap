@@ -64,6 +64,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
   const [commercialRange, setCommercialRange] = useState<Range>([0, 0])
   const [residentialRange, setResidentialRange] = useState<Range>([0, 0])
   const [neviFilterActive, setNeviFilterActive] = useState({ zero: true, one: true })
+  const [irs30cFilterActive, setirs30cFilterActive] = useState({ zero: true, one: true })
   const [pgeFilterActive, setPgeFilterActive] = useState({ zero: true, one: true })
   const resetSliders = () => {
     setPopRange([0, 200])
@@ -88,6 +89,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
     toggleCommercialRange,
     toggleResidentialRange,
     toggleNeviFilterActive,
+    toggleirs30cFilterActive,
     togglePgeFilterActive,
   } = config
 
@@ -137,6 +139,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
               props.drivable >= drivableRange[0] &&
               props.drivable <= drivableRange[1] &&
               ((neviFilterActive.zero && props.nevi === 0) || (neviFilterActive.one && props.nevi === 1)) &&
+              // ((irs30cFilterActive.zero && props.irs30c === 0) || (irs30cFilterActive.one && props.irs30c === 1)) &&
               ((pgeFilterActive.zero && props.pge === 0) || (pgeFilterActive.one && props.pge === 1))
 
             if (!withinPropertyCriteria) {
@@ -184,6 +187,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
       walkableRange,
       drivableRange,
       neviFilterActive,
+      // irs30cFilterActive,
       pgeFilterActive,
       commercialRange,
       residentialRange,
@@ -527,6 +531,29 @@ export const DataControls: React.FC<DataControlsProps> = ({
                     icons={false}
                   />
                   <span style={{ marginLeft: '20px' }}>NEVI Eligible</span>
+                </label>
+              </div>
+            </div>
+          )}
+          {toggleirs30cFilterActive && (
+            <div className="checkbox-group">
+              {/* IRS30C Checkboxes */}
+              <div className="checkbox-column">
+                <br />
+                <label style={{ display: 'flex', alignItems: 'center' }}>
+                  <Toggle
+                    checked={irs30cFilterActive.one && !irs30cFilterActive.zero}
+                    onChange={() => {
+                      const currentlyShowingOnlyOne = irs30cFilterActive.one && !irs30cFilterActive.zero
+                      if (currentlyShowingOnlyOne) {
+                        setirs30cFilterActive({ zero: true, one: true })
+                      } else {
+                        setirs30cFilterActive({ zero: false, one: true })
+                      }
+                    }}
+                    icons={false}
+                  />
+                  <span style={{ marginLeft: '20px' }}>IRS30C Eligible</span>
                 </label>
               </div>
             </div>
