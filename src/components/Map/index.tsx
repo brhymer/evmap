@@ -156,8 +156,8 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     toggleRentersRange: false,
     toggleWalkableRange: false,
     toggleDrivableRange: false,
-    toggleCommercialRange: true,
-    toggleResidentialRange: true,
+    toggleCommercialRange: false,
+    toggleResidentialRange: false,
     toggleNeviFilterActive: true,
     toggleirs30cFilterActive: true,
     togglePgeFilterActive: true,
@@ -191,6 +191,8 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   useEffectLibrary()
   useEffectSchool()
 
+  // useEffectCenterMap()
+
   const mapHtml = (
     <div>
       <div className="map-controls">
@@ -218,17 +220,17 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           L={L}
           cityBoundaryGeoJSON={cityBoundaryGeoJSON}
           color="#3388ff"
-          geojsonUrl="https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_priority.geojson"
+          geojsonUrl={cityConfig.priorityDataUrl}
           onDataUpdate={setPriorityData}
           config={priorityDataConfig}
         />
         <DataControls
-          dataControlsTitle="Feasible Pixels"
+          dataControlsTitle="Feasibility Pixels"
           map={map}
           L={L}
           cityBoundaryGeoJSON={cityBoundaryGeoJSON}
           color="#ffa500"
-          geojsonUrl="https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_priority.geojson"
+          geojsonUrl={cityConfig.feasibleDataUrl}
           onDataUpdate={setFeasibleData}
           config={feasibleDataConfig}
         />
@@ -320,7 +322,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
               maxZoom={AppConfig.maxZoom}
               minZoom={AppConfig.minZoom}
             >
-              {!isLoading ? (
+              {/* {!isLoading ? (
                 <>
                   <CenterToMarkerButton
                     center={allMarkersBoundCenter.centerPos}
@@ -348,7 +350,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
               ) : (
                 // eslint-disable-next-line react/jsx-no-useless-fragment
                 <></>
-              )}
+              )} */}
             </LeafletMapContainer>
           )}
         </div>
@@ -390,7 +392,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     url,
     cityBoundaryGeoJSON,
     setLayerData,
-    tolerance = 0.01,
+    tolerance = 0.00001,
   }: {
     url: RequestInfo | URL
     cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties> | null
@@ -412,7 +414,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       const response = await fetch(url)
       let dataJson = await response.json()
 
-      if (cached.simplifiedCityBoundary != null || cached.cityBoundaryGeoJSON !== cityBoundaryGeoJSON) {
+      if (cached.simplifiedCityBoundary === null || cached.cityBoundaryGeoJSON !== cityBoundaryGeoJSON) {
         if (cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0) {
           cached.simplifiedCityBoundary = turf.simplify(cityBoundaryGeoJSON.features[0], {
             tolerance,
@@ -441,16 +443,10 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
 
   function useEffectCenterMap(): void {
     useEffect(() => {
-      if (!allMarkersBoundCenter || !map) return
-
-      const moveEnd = () => {
-        map.setMinZoom(allMarkersBoundCenter.minZoom - 1)
-        map.off('moveend', moveEnd)
-      }
-
-      map.setMinZoom(0)
-      map.flyTo(allMarkersBoundCenter.centerPos, allMarkersBoundCenter.minZoom, { animate: false })
-      map.once('moveend', moveEnd)
+      if (!map || !L || !cityBoundaryGeoJSON || !cityConfig) return
+      const jsonGroup = L.geoJson(cityBoundaryGeoJSON)
+      map.fitBounds(jsonGroup.getBounds())
+      // map.zoomIn()
     }, [allMarkersBoundCenter, map])
   }
 
@@ -507,7 +503,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowParksAndRecreation,
           setLayerData: setParksAndRecreationData,
-          tolerance: 0.05,
+          tolerance: 0.00001,
         })
       }
     }, [cityConfig.parksAndRecreationUrl, cityBoundaryGeoJSON])
@@ -521,7 +517,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowHealthcareFacilities,
           setLayerData: setHealthcareFacilitiesData,
-          tolerance: 0.05,
+          tolerance: 0.00001,
         })
       }
     }, [cityConfig.healthcareFacilitiesUrl, cityBoundaryGeoJSON])
@@ -535,7 +531,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowTransitStops,
           setLayerData: setTransitStopsData,
-          tolerance: 0.05,
+          tolerance: 0.0001,
         })
       }
     }, [cityConfig.transitStopsUrl, cityBoundaryGeoJSON])
@@ -549,7 +545,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowLihtc,
           setLayerData: setLihtcData,
-          tolerance: 0.05,
+          tolerance: 0.00001,
         })
       }
     }, [cityConfig.lihtcUrl, cityBoundaryGeoJSON])
@@ -577,7 +573,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowSchool,
           setLayerData: setSchoolData,
-          tolerance: 0.05,
+          tolerance: 0.00001,
         })
       }
     }, [cityConfig.schoolsUrl, cityBoundaryGeoJSON])

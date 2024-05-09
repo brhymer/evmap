@@ -1,36 +1,20 @@
 import dynamic from 'next/dynamic'
 
 export interface GeoJSONFeatureProperties {
-  Pop: number
+  pop: number
   CIscoreP: number
-  '# Multi-Fa': number
-  '# Renters': number
-  walkable: number
-  drivable: number
+  'Multi-Family Housing Residents': number
+  Renters: number
+  chg_walk: number
+  chg_drive: number
   nevi: number
   pge: number
   commercial: number
   zoning_tot: number
-  zoning_res: number
-  zoning_r_1: number
-  zoning_com: number
-  zoning_c_1: number
-  zoning_c_2: number
-  zoning_mix: number
-  zoning_m_1: number
-  zoning_m_2: number
-  zoning_m_3: number
-  zoning_ind: number
-  zoning_civ: number
-  zoning_c_3: number
-  zoning_c_4: number
-  zoning_tra: number
-  zoning_ope: number
-  zoning_agr: number
-  zoning_oth: number
-  zoning_unk: number
-  nonurb: number
-  nmtc: number
+  zoning_residential_multi_family: number
+  zoning_commercial: number
+  zoning_mixed: number
+  irs30c: number
   lev_10000: number
 }
 

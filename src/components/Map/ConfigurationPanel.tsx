@@ -21,14 +21,14 @@ const titlesMap = {
   togglePopRange: 'Population in pixels',
   toggleCiRange: 'CES Percentile',
   toggleLevRange: 'LEVs/10000',
-  toggleMultiFaRange: '# Multi-Family',
+  toggleMultiFaRange: '# Multi-Family residents',
   toggleRentersRange: '# Renters',
   toggleWalkableRange: 'Walkable',
   toggleDrivableRange: 'Drivable',
   toggleCommercialRange: 'Commercial Zoning %',
   toggleResidentialRange: 'Multifamily Residential Zoning %',
   toggleNeviFilterActive: 'NEVI Eligible',
-  toggleirs30cFilterActive: 'IRS30C Eligible',
+  toggleirs30cFilterActive: 'IRS 30C Eligible',
   togglePgeFilterActive: 'Grid Capacity',
 }
 
@@ -94,7 +94,7 @@ const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
 
           <div className="config-section">
             <h2>
-              <b>Feasible Data</b>
+              <b>Feasibility Data</b>
             </h2>
             <div className="checkbox-column">
               {Object.entries(feasibleDataConfig).map(([key, value]) => (
