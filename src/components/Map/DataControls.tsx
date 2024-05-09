@@ -56,18 +56,6 @@ export const DataControls: React.FC<DataControlsProps> = ({
   })
   const [showColorPicker, setShowColorPicker] = useState(false)
 
-  const [popRange, setPopRange] = useState<Range>([0, 0])
-  const [ciScoreRange, setCiScoreRange] = useState<Range>([0, 0])
-  const [levRange, setLevRange] = useState<Range>([0, 0])
-  const [multiFaRange, setMultiFaRange] = useState<Range>([0, 0])
-  const [rentersRange, setRentersRange] = useState<Range>([0, 0])
-  const [walkableRange, setWalkableRange] = useState<Range>([0, 0])
-  const [drivableRange, setDrivableRange] = useState<Range>([0, 0])
-  const [commercialRange, setCommercialRange] = useState<Range>([0, 0])
-  const [residentialRange, setResidentialRange] = useState<Range>([0, 0])
-  const [neviFilterActive, setNeviFilterActive] = useState({ zero: true, one: true })
-  const [irs30cFilterActive, setIrs30cFilterActive] = useState({ zero: true, one: true })
-  const [pgeRange, setPgeRange] = useState<Range>([0, 0])
   const popMax = 200
   const ciScoreMax = 100
   const levMax = 1000
@@ -78,6 +66,19 @@ export const DataControls: React.FC<DataControlsProps> = ({
   const commercialMax = 100
   const residentialMax = 100
   const pgeMax = 3000
+  const [popRange, setPopRange] = useState<Range>([0, popMax])
+  const [ciScoreRange, setCiScoreRange] = useState<Range>([0, ciScoreMax])
+  const [levRange, setLevRange] = useState<Range>([0, levMax])
+  const [multiFaRange, setMultiFaRange] = useState<Range>([0, multiFaMax])
+  const [rentersRange, setRentersRange] = useState<Range>([0, rentersMax])
+  const [walkableRange, setWalkableRange] = useState<Range>([0, walkableMax])
+  const [drivableRange, setDrivableRange] = useState<Range>([0, drivableMax])
+  const [commercialRange, setCommercialRange] = useState<Range>([0, commercialMax])
+  const [residentialRange, setResidentialRange] = useState<Range>([0, residentialMax])
+  const [neviFilterActive, setNeviFilterActive] = useState({ zero: true, one: true })
+  const [irs30cFilterActive, setIrs30cFilterActive] = useState({ zero: true, one: true })
+  const [pgeRange, setPgeRange] = useState<Range>([0, 0])
+
   const resetSliders = () => {
     setPopRange([0, popMax])
     setCiScoreRange([0, ciScoreMax])
@@ -139,11 +140,11 @@ export const DataControls: React.FC<DataControlsProps> = ({
               (props.CIscoreP <= ciScoreRange[1] || ciScoreRange[1] === ciScoreMax) &&
               props.lev_10000 >= levRange[0] &&
               (props.lev_10000 <= levRange[1] || levRange[1] === levMax) &&
-              props['Multi-Family Housing Residents'] * 100 >= multiFaRange[0] && // CHANGE BACK ONCE PIXELS FIXED
-              (props['Multi-Family Housing Residents'] * 100 <= multiFaRange[1] || // CHANGE BACK ONCE PIXELS FIXED
+              props['Multi-Family Housing Residents'] >= multiFaRange[0] &&
+              (props['Multi-Family Housing Residents'] <= multiFaRange[1] ||
                 multiFaRange[1] === multiFaMax) &&
-              props.Renters * 100 >= rentersRange[0] && // CHANGE BACK ONCE PIXELS FIXED
-              (props.Renters * 100 <= rentersRange[1] || rentersRange[1] === rentersMax) && // CHANGE BACK ONCE PIXELS FIXED
+              props.Renters >= rentersRange[0] &&
+              (props.Renters <= rentersRange[1] || rentersRange[1] === rentersMax) &&
               props.zoning_commercial >= commercialRange[0] / 100 &&
               (props.zoning_commercial <= commercialRange[1] / 100 || commercialRange[1] === commercialMax) &&
               props.zoning_residential_multi_family >= residentialRange[0] / 100 &&
