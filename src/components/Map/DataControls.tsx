@@ -66,7 +66,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
   const [commercialRange, setCommercialRange] = useState<Range>([0, 0])
   const [residentialRange, setResidentialRange] = useState<Range>([0, 0])
   const [neviFilterActive, setNeviFilterActive] = useState({ zero: true, one: true })
-  const [irs30cFilterActive, setIrsFilterActive] = useState({ zero: true, one: true })
+  const [irs30cFilterActive, setIrs30cFilterActive] = useState({ zero: true, one: true })
   const [pgeRange, setPgeRange] = useState<Range>([0, 0])
   const popMax = 200
   const ciScoreMax = 100
@@ -154,7 +154,8 @@ export const DataControls: React.FC<DataControlsProps> = ({
               props.chg_drive >= drivableRange[0] &&
               (props.chg_drive <= drivableRange[1] || drivableRange[1] === drivableMax) &&
               ((neviFilterActive.zero && props.nevi === 0) || (neviFilterActive.one && props.nevi === 1)) &&
-              ((irs30cFilterActive.zero && props.irs30c === 0) || (irs30cFilterActive.one && props.irs30c === 1)) &&
+              ((irs30cFilterActive.zero && props.irs30c === 0) ||
+                (irs30cFilterActive.one && props.irs30c === 1)) &&
               props.pge >= pgeRange[0] &&
               (props.pge <= pgeRange[1] || pgeRange[1] === pgeMax)
             if (!withinPropertyCriteria) {
@@ -650,20 +651,20 @@ export const DataControls: React.FC<DataControlsProps> = ({
               </div>
             </div>
           )}
-          {toggleIrsFilterActive && (
+          {toggleirs30cFilterActive && (
             <div className="checkbox-group">
               {/* IRS Checkboxes */}
               <div className="checkbox-column">
                 <br />
                 <label style={{ display: 'flex', alignItems: 'center' }}>
                   <Toggle
-                    checked={irsFilterActive.one && !irsFilterActive.zero}
+                    checked={irs30cFilterActive.one && !irs30cFilterActive.zero}
                     onChange={() => {
-                      const currentlyShowingOnlyOne = irsFilterActive.one && !irsFilterActive.zero
+                      const currentlyShowingOnlyOne = irs30cFilterActive.one && !irs30cFilterActive.zero
                       if (currentlyShowingOnlyOne) {
-                        setIrsFilterActive({ zero: true, one: true })
+                        setIrs30cFilterActive({ zero: true, one: true })
                       } else {
-                        setIrsFilterActive({ zero: false, one: true })
+                        setIrs30cFilterActive({ zero: false, one: true })
                       }
                     }}
                     icons={false}
