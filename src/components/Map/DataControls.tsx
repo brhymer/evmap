@@ -66,9 +66,8 @@ export const DataControls: React.FC<DataControlsProps> = ({
   const [commercialRange, setCommercialRange] = useState<Range>([0, 0])
   const [residentialRange, setResidentialRange] = useState<Range>([0, 0])
   const [neviFilterActive, setNeviFilterActive] = useState({ zero: true, one: true })
-  const [irsFilterActive, setIrsFilterActive] = useState({ zero: true, one: true })
+  const [irs30cFilterActive, setIrsFilterActive] = useState({ zero: true, one: true })
   const [pgeRange, setPgeRange] = useState<Range>([0, 0])
-  // const [pgeFilterActive, setPgeFilterActive] = useState({ zero: true, one: true });
   const popMax = 200
   const ciScoreMax = 100
   const levMax = 1000
@@ -103,7 +102,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
     toggleCommercialRange,
     toggleResidentialRange,
     toggleNeviFilterActive,
-    toggleIrsFilterActive,
+    toggleirs30cFilterActive,
     togglePgeFilterActive,
   } = config
 
@@ -155,7 +154,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
               props.chg_drive >= drivableRange[0] &&
               (props.chg_drive <= drivableRange[1] || drivableRange[1] === drivableMax) &&
               ((neviFilterActive.zero && props.nevi === 0) || (neviFilterActive.one && props.nevi === 1)) &&
-              ((irsFilterActive.zero && props.irs30c === 0) || (irsFilterActive.one && props.irs30c === 1)) &&
+              ((irs30cFilterActive.zero && props.irs30c === 0) || (irs30cFilterActive.one && props.irs30c === 1)) &&
               props.pge >= pgeRange[0] &&
               (props.pge <= pgeRange[1] || pgeRange[1] === pgeMax)
             if (!withinPropertyCriteria) {
@@ -203,7 +202,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
       walkableRange,
       drivableRange,
       neviFilterActive,
-      irsFilterActive,
+      irs30cFilterActive,
       pgeRange,
       commercialRange,
       residentialRange,

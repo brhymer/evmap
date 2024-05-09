@@ -28,7 +28,7 @@ const titlesMap = {
   toggleCommercialRange: 'Commercial Zoning %',
   toggleResidentialRange: 'Multifamily Residential Zoning %',
   toggleNeviFilterActive: 'NEVI Eligible',
-  toggleIrsFilterActive: 'IRS 30C Eligible',
+  toggleirs30cFilterActive: 'IRS30C Eligible',
   togglePgeFilterActive: 'Grid Capacity',
 }
 
