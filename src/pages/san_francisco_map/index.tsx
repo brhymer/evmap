@@ -4,9 +4,9 @@ import Map from '@components/Map'
 
 const SanFranciscoMapPage = () => {
   const sanfranciscoConfig = {
-    boundaryUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/oakland_city_limits.geojson',
-    priorityDataUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/sf_priority_May24.json',
-    feasibleDataUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/sf_priority_May24.json',
+    boundaryUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SF_CityBoundary.geojson',
+    priorityDataUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/sf_priorityMay24.json',
+    feasibleDataUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/sf_priorityMay24.json',
     transitStopsUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/bart_oakland.geojson',
     parksAndRecreationUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/SF_parks-2.geojson',
     healthcareFacilitiesUrl:

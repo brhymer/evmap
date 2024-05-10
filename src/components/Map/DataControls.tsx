@@ -181,7 +181,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 const simplifiedGeometry = turf.simplify(geometry, { tolerance, highQuality: false })
                 return (
                   turf.booleanOverlap(simplifiedGeometry, simplifiedCityBoundary) ||
-                  turf.booleanContains(simplifiedCityBoundary, simplifiedGeometry) ||
+                  // turf.booleanContains(simplifiedCityBoundary, simplifiedGeometry) ||
                   turf.booleanWithin(simplifiedGeometry, simplifiedCityBoundary)
                 )
               }
@@ -194,12 +194,9 @@ export const DataControls: React.FC<DataControlsProps> = ({
 
       const fetchAndFilterData = async () => {
         try {
-          if (cached.dataLayerJson === null) {
-            const response = await fetch(geojsonUrl)
-            const dataJson: GeoJSONData = await response.json()
-            cached.dataLayerJson = dataJson
-          }
-          const filteredData = filterData(cached.dataLayerJson, cityBoundaryGeoJSON)
+          const response = await fetch(geojsonUrl)
+          const dataJson: GeoJSONData = await response.json()
+          const filteredData = filterData(dataJson, cityBoundaryGeoJSON)
           onDataUpdate(filteredData)
           setLayerData(filteredData)
         } catch (error) {
@@ -315,7 +312,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 min={0}
                 max={popMax}
                 value={popRange}
-                onChange={setPopRange}
+                onAfterChange={setPopRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -349,7 +346,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 min={0}
                 max={ciScoreMax}
                 value={ciScoreRange}
-                onChange={setCiScoreRange}
+                onAfterChange={setCiScoreRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -382,7 +379,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 min={0}
                 max={levMax}
                 value={levRange}
-                onChange={setLevRange}
+                onAfterChange={setLevRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -415,7 +412,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 min={0}
                 max={multiFaMax}
                 value={multiFaRange}
-                onChange={setMultiFaRange}
+                onAfterChange={setMultiFaRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -448,7 +445,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 min={0}
                 max={rentersMax}
                 value={rentersRange}
-                onChange={setRentersRange}
+                onAfterChange={setRentersRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -482,7 +479,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 min={0}
                 max={walkableMax}
                 value={walkableRange}
-                onChange={setWalkableRange}
+                onAfterChange={setWalkableRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -516,7 +513,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 min={0}
                 max={drivableMax}
                 value={drivableRange}
-                onChange={setDrivableRange}
+                onAfterChange={setDrivableRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -549,7 +546,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 min={0}
                 max={commercialMax}
                 value={commercialRange}
-                onChange={setCommercialRange}
+                onAfterChange={setCommercialRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -582,7 +579,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 min={0}
                 max={residentialMax}
                 value={residentialRange}
-                onChange={setResidentialRange}
+                onAfterChange={setResidentialRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -616,7 +613,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 min={0}
                 max={pgeMax}
                 value={pgeRange}
-                onChange={setPgeRange}
+                onAfterChange={setPgeRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
