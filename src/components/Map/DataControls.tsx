@@ -15,7 +15,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import * as turf from '@turf/turf'
 import { FeatureCollection, MultiPolygon, Point, Polygon } from 'geojson'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { cache, useEffect, useRef, useState } from 'react'
 import { SketchPicker } from 'react-color'
 import Slider from 'react-slider'
 import Toggle from 'react-toggle'
@@ -33,6 +33,15 @@ interface DataControlsProps {
   onDataUpdate: any
   config: any
 }
+
+interface CachedType {
+  dataLayerJson: GeoJSONData | null
+}
+
+const cached: CachedType = {
+  dataLayerJson: null,
+}
+
 export const DataControls: React.FC<DataControlsProps> = ({
   dataControlsTitle,
   map,
@@ -66,15 +75,15 @@ export const DataControls: React.FC<DataControlsProps> = ({
   const commercialMax = 100
   const residentialMax = 100
   const pgeMax = 3000
-  const [popRange, setPopRange] = useState<Range>([0, popMax])
-  const [ciScoreRange, setCiScoreRange] = useState<Range>([0, ciScoreMax])
-  const [levRange, setLevRange] = useState<Range>([0, levMax])
-  const [multiFaRange, setMultiFaRange] = useState<Range>([0, multiFaMax])
-  const [rentersRange, setRentersRange] = useState<Range>([0, rentersMax])
-  const [walkableRange, setWalkableRange] = useState<Range>([0, walkableMax])
-  const [drivableRange, setDrivableRange] = useState<Range>([0, drivableMax])
-  const [commercialRange, setCommercialRange] = useState<Range>([0, commercialMax])
-  const [residentialRange, setResidentialRange] = useState<Range>([0, residentialMax])
+  const [popRange, setPopRange] = useState<Range>([0, 0])
+  const [ciScoreRange, setCiScoreRange] = useState<Range>([0, 0])
+  const [levRange, setLevRange] = useState<Range>([0, 0])
+  const [multiFaRange, setMultiFaRange] = useState<Range>([0, 0])
+  const [rentersRange, setRentersRange] = useState<Range>([0, 0])
+  const [walkableRange, setWalkableRange] = useState<Range>([0, 0])
+  const [drivableRange, setDrivableRange] = useState<Range>([0, 0])
+  const [commercialRange, setCommercialRange] = useState<Range>([0, 0])
+  const [residentialRange, setResidentialRange] = useState<Range>([0, 0])
   const [neviFilterActive, setNeviFilterActive] = useState({ zero: true, one: true })
   const [irs30cFilterActive, setIrs30cFilterActive] = useState({ zero: true, one: true })
   const [pgeRange, setPgeRange] = useState<Range>([0, 0])
@@ -185,9 +194,12 @@ export const DataControls: React.FC<DataControlsProps> = ({
 
       const fetchAndFilterData = async () => {
         try {
-          const response = await fetch(geojsonUrl)
-          const dataJson: GeoJSONData = await response.json()
-          const filteredData = filterData(dataJson, cityBoundaryGeoJSON)
+          if (cached.dataLayerJson === null) {
+            const response = await fetch(geojsonUrl)
+            const dataJson: GeoJSONData = await response.json()
+            cached.dataLayerJson = dataJson
+          }
+          const filteredData = filterData(cached.dataLayerJson, cityBoundaryGeoJSON)
           onDataUpdate(filteredData)
           setLayerData(filteredData)
         } catch (error) {
