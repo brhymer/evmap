@@ -90,7 +90,7 @@ const Home = () => (
       Konno. Initial funding provided by UC Berkeley Institute for Transportation studies. Contact:
       tlamm@law.berkeley.edu, kammen@berkeley.edu.{' '}
     </footer>
-    <footer className="mt-16 flex justify-between p-3 rounded bg-light text-sm">
+    {/* <footer className="mt-16 flex justify-between p-3 rounded bg-light text-sm">
       <div>
         Created by Ankita Shanbhag <br />
         <Link href="https://linkedin.com/in/ankitashanbhag" className="text-primary">
@@ -100,7 +100,7 @@ const Home = () => (
       <div className="text-primary">
         <Leaf size={AppConfig.ui.mapIconSize} className="mt-2" />
       </div>
-    </footer>
+    </footer> */}
   </div>
 )
 
