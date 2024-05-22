@@ -25,7 +25,8 @@ const Home = () => (
         <NavMenu />
       </div>
     </section>
-    <p>. </p>
+    <p> </p>
+    <br />
     <span>
       {' '}
       <p>

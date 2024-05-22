@@ -15,7 +15,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import * as turf from '@turf/turf'
 import { FeatureCollection, MultiPolygon, Point, Polygon } from 'geojson'
-import React, { cache, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { SketchPicker } from 'react-color'
 import Slider from 'react-slider'
 import Toggle from 'react-toggle'
@@ -54,7 +54,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isFirstLoad, setIsFirstLoad] = useState(true)
-
+  const [loading, setLoading] = useState(true) // Add loading state
   const [layerData, setLayerData] = useState<GeoJSONData | null>(null)
   const [showLayerData] = useState(true)
   const layerGroupId = useRef(`layerGroup-${dataControlsTitle}`).current
@@ -201,6 +201,8 @@ export const DataControls: React.FC<DataControlsProps> = ({
           setLayerData(filteredData)
         } catch (error) {
           console.error('Error fetching GeoJSON data:', error)
+        } finally {
+          setLoading(false) // Set loading to false after data is fetched
         }
       }
       fetchAndFilterData()
@@ -261,6 +263,31 @@ export const DataControls: React.FC<DataControlsProps> = ({
 
   useEffectSetLayerData(cityBoundaryGeoJSON)
   useEffectLayerData()
+
+  useEffect(() => {
+    if (map) {
+      // Set initial view to San Francisco and Oakland
+      map.setView([37.7749, -122.4194], 10) // Latitude, Longitude, Zoom level
+    }
+  }, [map])
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          fontSize: '24px',
+          fontWeight: 'bold',
+        }}
+      >
+        Retrieving data...
+      </div>
+    )
+  }
+
   return (
     <div className="priority-data-controls">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -300,9 +327,6 @@ export const DataControls: React.FC<DataControlsProps> = ({
       </div>
       {showLayerData && isExpanded && (
         <>
-          {/* {layerData && (
-                      <GeoJSONLayer data={layerData} style={{ color: color }} />
-                    )} */}
           {/* Population Slider */}
           {togglePopRange && (
             <label>
@@ -340,7 +364,6 @@ export const DataControls: React.FC<DataControlsProps> = ({
           {toggleCiRange && (
             <label>
               <br />
-              {/* CalEnviroScreen4.0 percentile: {ciScoreRange[0]} to {ciScoreRange[1]} */}
               CalEnviroScreen4.0 percentile: {ciScoreRange[0]} to {ciScoreRange[1]}
               <Slider
                 min={0}

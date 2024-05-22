@@ -24,6 +24,7 @@
     "react/require-default-props": 0,
     "import/prefer-default-export": 0,
     "react/jsx-no-useless-fragment": 1,
+    "react/prop-types": "off",
     "prettier/prettier": [
       "error",
       {
@@ -52,3 +53,4 @@
     ]
   }
 }
+
