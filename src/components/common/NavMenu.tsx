@@ -43,7 +43,7 @@ const NavMenu = ({ variant = NavMenuVariant.INTRO }: NavMenuProps) => {
     <>
       {!isAuthenticated && (
         <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-2">
-          <p>Type the password below to get access to the maps</p>
+          <p>Enter password to access the demo</p>
           <input
             type="password"
             placeholder="Enter password"
@@ -58,11 +58,11 @@ const NavMenu = ({ variant = NavMenuVariant.INTRO }: NavMenuProps) => {
       )}
       {isAuthenticated && (
         <ul className={`${listStyle}`}>
-          <NavMenuItem href="/" label="About the Project" icon={<Home size={navIconSize} />} />
-          <NavMenuItem href="/oakland_map" label="Oakland Map" icon={<Compass size={navIconSize} />} />
+          <NavMenuItem href="/" label="Home" icon={<Home size={navIconSize} />} />
+          <NavMenuItem href="/oakland_map" label="Oakland Demo" icon={<Compass size={navIconSize} />} />
           <NavMenuItem
             href="/san_francisco_map"
-            label="San Francisco Map"
+            label="San Francisco Demo"
             icon={<Compass size={navIconSize} />}
           />
         </ul>
