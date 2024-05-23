@@ -43,7 +43,8 @@ const Home = () => (
       <p>
         This tool is designed as a free, open-access platform to inform local government and stakeholder
         decision making on EV and mobility infrastructure investments. The demonstration maps available here
-        are intended to facilitate review, data refinement, and feedback in advance of a California statewide.
+        are intended to facilitate review, data refinement, and feedback in advance of a California statewide
+        launch.
       </p>
       <br />
       <p>
