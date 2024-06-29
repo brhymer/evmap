@@ -4,14 +4,14 @@ import { useRouter } from 'next/router'
 
 type LinkAnchorIntersection = LinkProps & HTMLAnchorElement
 
-interface NavMenuItemProps {
+interface MapSelectorItemProps {
   href: LinkAnchorIntersection['href']
   external?: boolean
   label: string
   icon: LucideProps
 }
 
-const NavMenuItem = ({ icon, href, external = false, label }: NavMenuItemProps) => {
+const MapSelectorItem = ({ icon, href, external = false, label }: MapSelectorItemProps) => {
   const router = useRouter()
 
   return (
@@ -25,4 +25,4 @@ const NavMenuItem = ({ icon, href, external = false, label }: NavMenuItemProps) 
   )
 }
 
-export default NavMenuItem
+export default MapSelectorItem

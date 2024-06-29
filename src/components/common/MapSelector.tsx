@@ -1,20 +1,20 @@
 import { Compass, Home } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { AppConfig, NavMenuVariant } from '@lib/AppConfig'
+import { AppConfig, MapSelectorVariant } from '@lib/AppConfig'
 
-import NavMenuItem from './NavMenuItem'
+import MapSelectorItem from './MapSelectorItem'
 
-interface NavMenuProps {
-  variant?: NavMenuVariant
+interface MapSelectorProps {
+  variant?: MapSelectorVariant
 }
 
-const NavMenu = ({ variant = NavMenuVariant.INTRO }: NavMenuProps) => {
+const MapSelector = ({ variant = MapSelectorVariant.INTRO }: MapSelectorProps) => {
   const navIconSize =
-    variant === NavMenuVariant.TOPNAV ? AppConfig.ui.topBarIconSize : AppConfig.ui.menuIconSize
+    variant === MapSelectorVariant.TOPNAV ? AppConfig.ui.topBarIconSize : AppConfig.ui.menuIconSize
 
   const listStyle =
-    variant === NavMenuVariant.TOPNAV
+    variant === MapSelectorVariant.TOPNAV
       ? `flex text-white gap-4 text-lg text-white text-sm md:text-base`
       : `flex flex-col justify-between gap-1 w-fit text-primary`
 
@@ -58,9 +58,9 @@ const NavMenu = ({ variant = NavMenuVariant.INTRO }: NavMenuProps) => {
       )}
       {isAuthenticated && (
         <ul className={`${listStyle}`}>
-          <NavMenuItem href="/" label="Home" icon={<Home size={navIconSize} />} />
-          <NavMenuItem href="/oakland_map" label="Oakland Demo" icon={<Compass size={navIconSize} />} />
-          <NavMenuItem
+          <MapSelectorItem href="/" label="Home" icon={<Home size={navIconSize} />} />
+          <MapSelectorItem href="/oakland_map" label="Oakland Demo" icon={<Compass size={navIconSize} />} />
+          <MapSelectorItem
             href="/san_francisco_map"
             label="San Francisco Demo"
             icon={<Compass size={navIconSize} />}
@@ -71,4 +71,4 @@ const NavMenu = ({ variant = NavMenuVariant.INTRO }: NavMenuProps) => {
   )
 }
 
-export default NavMenu
+export default MapSelector
