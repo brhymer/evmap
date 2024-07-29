@@ -1,73 +1,100 @@
-import { Compass, Home } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Button, Dropdown, DropdownProps } from 'semantic-ui-react'
+import { useRouter } from 'next/router'
 
-import { AppConfig, MapSelectorVariant } from '@lib/AppConfig'
+import counties from '../../../public/jurisdictions.json'
 
-import MapSelectorItem from './MapSelectorItem'
+type County = {
+  id: string;
+  name: string;
+  available: boolean;
+  cities: City[];
+};
 
-interface MapSelectorProps {
-  variant?: MapSelectorVariant
-}
+type City = {
+  id: string;
+  name: string;
+  available: boolean;
+};
 
-const MapSelector = ({ variant = MapSelectorVariant.INTRO }: MapSelectorProps) => {
-  const navIconSize =
-    variant === MapSelectorVariant.TOPNAV ? AppConfig.ui.topBarIconSize : AppConfig.ui.menuIconSize
+const MapSelector = () => {
 
-  const listStyle =
-    variant === MapSelectorVariant.TOPNAV
-      ? `flex text-white gap-4 text-lg text-white text-sm md:text-base`
-      : `flex flex-col justify-between gap-1 w-fit text-primary`
+  const [selectedCounty, setSelectedCounty] = useState<County | null>(null);
+  const [cities, setCities] = useState<City[]>([]);
+  const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  const router = useRouter();
+  const handleButtonClick = (event: React.FormEvent) => {
+    event.preventDefault();
+    const county = selectedCounty?.name.replace(/\s+/g, '_').toLowerCase() || "san_francisco_county";
+    const city = selectedCity?.name.replace(/\s+/g, '_').toLowerCase() || "san_francisco";
+    // const url = window.location.href
+    // localStorage.setItem('viewedWelcomeModal', 'false'); // Reset the viewed flag
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-
-  useEffect(() => {
-    const authState = localStorage.getItem('isAuthenticated')
-    if (authState === 'true') {
-      setIsAuthenticated(true)
+    router.push(`/map_template?county=${county}&city=${city}`);
+  };
+  const handleCountyChange = (_event: React.SyntheticEvent, data: DropdownProps) => {
+    const currentCounty = counties.find(county => county.name === data.value);
+    if (currentCounty) {
+      setSelectedCounty(currentCounty);
+      setCities(currentCounty.cities);
+  
+      if (currentCounty.name === 'San Francisco County') {
+        const sanFranciscoCity = currentCounty.cities.find(city => city.name === 'San Francisco');
+        if (sanFranciscoCity) {
+          setSelectedCity(sanFranciscoCity);
+        } else {
+          setSelectedCity(null);
+        }
+      } else {
+        setSelectedCity(null);
+      }
     }
-  }, [])
+  };
 
-  const handlePasswordSubmit = (event: React.FormEvent) => {
-    event.preventDefault()
-    const correctPassword = '2024access' // Replace with your desired password
-    if (password === correctPassword) {
-      setIsAuthenticated(true)
-      localStorage.setItem('isAuthenticated', 'true')
-    } else {
-      alert('Incorrect password')
+  const handleCityChange = (_event: React.SyntheticEvent, data: DropdownProps) => {
+    const currentCity = cities.find(city => city.name === data.value);
+    if (currentCity) {
+      setSelectedCity(currentCity);
     }
-  }
+  };
+
+  const showButton = selectedCounty && (
+    selectedCounty.name === 'San Francisco County' || 
+    selectedCity
+  );
 
   return (
-    <>
-      {!isAuthenticated && (
-        <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-2">
-          <p>Enter password to access the demo</p>
-          <input
-            type="password"
-            placeholder="Enter password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="p-2 border rounded"
+    <div className="flex">
+      <div className="w-1/3 pr-2">
+        <Dropdown
+          placeholder='Select County'
+          fluid
+          selection
+          options={counties.map(county => ({ key: county.id, text: county.name, value: county.name, disabled: !county.available }))}
+          onChange={handleCountyChange}
+          className="text-blue-500"
+        />
+      </div>
+      <div className="w-1/3 pr-2">
+        {selectedCounty && selectedCounty?.name !== 'San Francisco County' && (
+            <Dropdown
+            placeholder='Select City'
+            fluid
+            selection
+            options={cities.map(city => ({ key: city.id, text: city.name, value: city.name, disabled: !city.available }))}
+            onChange={handleCityChange}
           />
-          <button type="submit" className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-            Submit
-          </button>
-        </form>
-      )}
-      {isAuthenticated && (
-        <ul className={`${listStyle}`}>
-          <MapSelectorItem href="/" label="Home" icon={<Home size={navIconSize} />} />
-          <MapSelectorItem href="/oakland_map" label="Oakland Demo" icon={<Compass size={navIconSize} />} />
-          <MapSelectorItem
-            href="/san_francisco_map"
-            label="San Francisco Demo"
-            icon={<Compass size={navIconSize} />}
-          />
-        </ul>
-      )}
-    </>
+        )}
+      </div>
+      <div className="w-1/3 flex items-center justify-center">
+          {showButton && (
+            // <Button className="p-3 bg-secondary text-white rounded ">
+            <Button onClick={handleButtonClick}>
+              Go to map
+            </Button>
+          )}
+      </div>
+    </div>
   )
 }
 

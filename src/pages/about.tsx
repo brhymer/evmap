@@ -1,33 +1,69 @@
+import Image from 'next/image';
+import Link from 'next/link';
+
 const About = () => {
   return (
     <section>
-      <div>
-        <br />
-        <h1 > About EV-map</h1>
-        <ul className="bullet-list">
-          <li>
-            CalEnviroScreen4.0 percentile: Slide to define the range of CalEnviroScreen percentile scores
-            included in the &quot;priority&quot; pixel set. A higher range (e.g., 70-100) will limit the set to
-            show only those areas scoring highest across the CES4.0 environmental vulnerability indicators.
-          </li>
-          <li>
-            L2 chargers within 10 min walk: Slide the range down to exclude pixels with multiple existing Level
-            Level 2 chargers available within a 10 minute walk of the pixel.
-          </li>
-          <li>
-            PG&E load capacity: Increase the bottom slider to exclude areas with electrical distribution grid
-            capacity (in kW) lower than the indicated number.
-          </li>
-          <li>
-            NEVI and IRS 30C eligible: Toggle on to show areas eligible for either funding source; toggle both
-            on to show areas eligible for both.
-          </li>
-        </ul>
-        <br />
-        <p>
-          We are actively adding more criteria, expanding to new geographies, refining data, and improving the
-          user interface. We welcome your feedback.
-        </p>
+      <h1 className="homepage-header">About EV-map</h1>
+      <p>
+        This tool is intended for free use by local governments and stakeholders to identify high-priority, high-feasibility sites for investment in electric vehicle charging and associated mobility infrastructure. It is a joint project of UC Berkeley's Energy and Resources Group and Center for Law, Energy & the Environment (CLEE) as part of CLEE's EV Equity Initiative. This is a demonstration tool for review and design purposes; all data still subject to verification. 
+        All data acquired from public sources except as noted.
+        Lead designers: Ari Ball-Burack, Meagan Marie LeBerth, Brad Rhymer, Ankita Suresh Shanbhag. Other research credits: Eleanor Adachi, Radhika Agarwal, Aki Konno. 
+        Initial funding provided by UC Berkeley Institute for Transportation studies. 
+      </p>
+      <br />
+      <h2 className="font-bold mb-4">Leadership Team</h2>
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-2">
+          <Link className="font-bold" href="https://erg.berkeley.edu/people/kammen-daniel-m/">
+            <Image src="/images/dkammen.png" 
+              alt="Example Image" 
+              width={100} 
+              height={130} 
+            />
+          </Link>
+        </div>
+        <div className="col-span-10 flex flex-col justify-center">
+          <Link className="font-bold" href="https://erg.berkeley.edu/people/kammen-daniel-m/">
+            Dan Kammen
+          </Link>
+          <p>Professor of Energy</p>
+          <p>Energy & Resources Group and Goldman School of Public Policy, UC Berkeley</p>
+        </div>
+        <div className="col-span-2">
+          <Link className="font-bold" href="https://www.law.berkeley.edu/research/clee/about/people/ted-lamm/">
+            <Image 
+              src="/images/tlamm.png" 
+              alt="Example Image" 
+              width={100} 
+              height={130} 
+            />
+          </Link>
+        </div>
+        <div className="col-span-10 flex flex-col justify-center">
+          <Link className="font-bold" href="https://www.law.berkeley.edu/research/clee/about/people/ted-lamm/">
+            Ted Lamm
+          </Link>
+          <p>Associate Director</p>
+          <p>Center for Law, Energy & the Environment, UC Berkeley School of Law</p> 
+        </div>
+        <div className="col-span-2">
+          <Link className="font-bold" href="https://www.law.berkeley.edu/research/clee/about/people/ken-alex/">
+            <Image 
+              src="/images/kalex.png" 
+              alt="Example Image" 
+              width={100} 
+              height={130} 
+            />
+          </Link>
+        </div>
+        <div className="col-span-10 flex flex-col justify-center">
+          <Link className="font-bold" href="https://www.law.berkeley.edu/research/clee/about/people/ken-alex/">
+            Ken Alex
+          </Link>
+          <p>Director, Project Climate</p>
+          <p>Center for Law, Energy & the Environment, UC Berkeley School of Law</p>
+        </div>
       </div>
     </section>
   );
