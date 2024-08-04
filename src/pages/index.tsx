@@ -1,42 +1,37 @@
 import { Leaf } from 'lucide-react'
-import { useState } from 'react'
 import Head from 'next/head'
-import Link from 'next/link'
+import { useState } from 'react'
 
-import MapSelector from '@components/common/MapSelector'
-import Navbar from '@components/common/Navbar'
 import Footer from '@components/common/Footer'
+import Navbar from '@components/common/Navbar'
 
 import { AppConfig } from '@lib/AppConfig'
-import Default from './default'
+
 import About from './about'
-import Data from './data'
 import Contact from './contact'
+import Data from './data'
+import Default from './default'
 import Instructions from './instructions'
 
 const Home = () => {
-
-  const [currentView, setCurrentView] = useState<string>('home');
-
+  const [currentView, setCurrentView] = useState<string>('home')
   const renderView = () => {
     switch (currentView) {
       case 'default':
-        return <Default />;
+        return <Default />
       case 'instructions':
-        return <Instructions />;
+        return <Instructions />
       case 'about':
-        return <About />;
+        return <About />
       case 'data':
-        return <Data />;
+        return <Data />
       case 'contact':
-        return <Contact />;
+        return <Contact />
       default:
-        return <Default />;
+        return <Default />
     }
   }
   return (
-    // <div className="container mx-auto max-w-6xl max-md:max-w-none p-3">
-    // <div className="flex flex-col min-h-screen">
     <div className="min-h-screen">
       <div className="flex-grow">
         <Head>
@@ -60,13 +55,11 @@ const Home = () => {
           `}</style> */}
         </Head>
         {/* <header className="mt-10 items-top gap-4 md:flex" /> */}
-        <section >
+        <section>
           <div>
             <Navbar setCurrentView={setCurrentView} />
             <div className="homepage-background">
-              <section className="homepage-card sm:mx-8 md:mx-12 lg:mx-16">
-                {renderView()}
-              </section>
+              <section className="homepage-card sm:mx-8 md:mx-12 lg:mx-16">{renderView()}</section>
             </div>
           </div>
         </section>

@@ -1,28 +1,27 @@
 // import { Compass, Home } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { AppConfig, MapSelectorVariant } from '@lib/AppConfig'
 import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+
+import { AppConfig, MapSelectorVariant } from '@lib/AppConfig'
 
 import MapSelector from '../components/common/MapSelector'
-
-import counties from '../../public/jurisdictions.json'
 
 interface MapSelectorProps {
   variant?: MapSelectorVariant
 }
 
 type County = {
-  id: string;
-  name: string;
-  available: boolean;
-  cities: City[];
-};
+  id: string
+  name: string
+  available: boolean
+  cities: City[]
+}
 
 type City = {
-  id: string;
-  name: string;
-  available: boolean;
-};
+  id: string
+  name: string
+  available: boolean
+}
 
 const Default = ({ variant = MapSelectorVariant.INTRO }: MapSelectorProps) => {
   // const navIconSize =
@@ -36,7 +35,7 @@ const Default = ({ variant = MapSelectorVariant.INTRO }: MapSelectorProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
 
-  const router = useRouter();
+  const router = useRouter()
 
   useEffect(() => {
     const authState = localStorage.getItem('isAuthenticated')
@@ -58,7 +57,7 @@ const Default = ({ variant = MapSelectorVariant.INTRO }: MapSelectorProps) => {
 
   return (
     <>
-    <h1 className="homepage-header">Select a jurisdiction</h1>
+      <h1 className="homepage-header">Select a jurisdiction</h1>
       {!isAuthenticated && (
         <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-2">
           <p>Enter password to access the demo</p>
@@ -74,25 +73,22 @@ const Default = ({ variant = MapSelectorVariant.INTRO }: MapSelectorProps) => {
           </button>
         </form>
       )}
-      {isAuthenticated && (
-        <MapSelector />
-        // <ul className={`${listStyle}`}>
-        //   <MapSelectorItem href="/" label="Home" icon={<Home size={navIconSize} />} />
-        //   <MapSelectorItem href="/oakland_map" label="Oakland Demo" icon={<Compass size={navIconSize} />} />
-        //   <MapSelectorItem
-        //     href="/san_francisco_map"
-        //     label="San Francisco Demo"
-        //     icon={<Compass size={navIconSize} />}
-        //   />
-        // </ul>
-      )}
-      <br/>
+      {isAuthenticated && <MapSelector />}
+      <br />
       <h1 className="homepage-header">Media</h1>
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
+        dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+        aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
+        officia deserunt mollit anim id est laborum.
       </p>
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
+        dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+        aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
+        officia deserunt mollit anim id est laborum.
       </p>
     </>
   )
