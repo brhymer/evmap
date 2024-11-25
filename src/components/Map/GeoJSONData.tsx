@@ -6,7 +6,11 @@ export interface GeoJSONFeatureProperties {
   'Multi-Family Housing Residents': number
   Renters: number
   chg_walk: number
+  // added
+  chg_walk_L2_10: number
   chg_drive: number
+  // added
+  chg_drive_DCF_10: number
   nevi: number
   pge: number
   commercial: number
@@ -37,6 +41,8 @@ export interface GeoJSONFeature {
 export interface GeoJSONData {
   type: 'FeatureCollection'
   features: GeoJSONFeature[]
+  // priorityFeatures: GeoJSONFeature[],
+  // feasibilityFeatures: GeoJSONFeature[],
 }
 
 export const LeafletCluster = dynamic(async () => (await import('./LeafletCluster')).LeafletCluster(), {

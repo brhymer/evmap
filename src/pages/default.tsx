@@ -1,97 +1,117 @@
 // import { Compass, Home } from 'lucide-react'
-import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+// import { AppConfig, MapSelectorVariant } from '@lib/AppConfig'
+import { Icon } from 'semantic-ui-react'
 
-import { AppConfig, MapSelectorVariant } from '@lib/AppConfig'
+import { openInNewWindow } from '@src/utils/openInNewWindow'
+
+import NavBarProps from '@lib/NavBarProps'
 
 import MapSelector from '../components/common/MapSelector'
 
-interface MapSelectorProps {
-  variant?: MapSelectorVariant
-}
+const Default: React.FC<NavBarProps> = ({ setCurrentView }) => (
+  // const [isAuthenticated, setIsAuthenticated] = useState(false)
+  // const [password, setPassword] = useState('')
 
-type County = {
-  id: string
-  name: string
-  available: boolean
-  cities: City[]
-}
+  // useEffect(() => {
+  //   const authState = localStorage.getItem('isAuthenticated')
+  //   if (authState === 'true') {
+  //     setIsAuthenticated(true)
+  //   }
+  // }, [])
 
-type City = {
-  id: string
-  name: string
-  available: boolean
-}
-
-const Default = ({ variant = MapSelectorVariant.INTRO }: MapSelectorProps) => {
-  // const navIconSize =
-  //   variant === MapSelectorVariant.TOPNAV ? AppConfig.ui.topBarIconSize : AppConfig.ui.menuIconSize
-
-  // const listStyle =
-  //   variant === MapSelectorVariant.TOPNAV
-  //     ? `flex text-white gap-4 text-lg text-white text-sm md:text-base`
-  //     : `flex flex-col justify-between gap-1 w-fit text-primary`
-
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-
-  const router = useRouter()
-
-  useEffect(() => {
-    const authState = localStorage.getItem('isAuthenticated')
-    if (authState === 'true') {
-      setIsAuthenticated(true)
-    }
-  }, [])
-
-  const handlePasswordSubmit = (event: React.FormEvent) => {
-    event.preventDefault()
-    const correctPassword = process.env.NEXT_PUBLIC_PASSWORD
-    if (password === correctPassword) {
-      setIsAuthenticated(true)
-      localStorage.setItem('isAuthenticated', 'true')
-    } else {
-      alert('Incorrect password')
-    }
-  }
-
-  return (
-    <>
-      <h1 className="homepage-header">Select a jurisdiction</h1>
-      {!isAuthenticated && (
-        <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-2">
-          <p>Enter password to access the demo</p>
+  // const handlePasswordSubmit = (event: React.FormEvent) => {
+  //   event.preventDefault()
+  //   const correctPassword = process.env.NEXT_PUBLIC_PASSWORD
+  //   if (password === correctPassword) {
+  //     setIsAuthenticated(true)
+  //     localStorage.setItem('isAuthenticated', 'true')
+  //   } else {
+  //     alert('Incorrect password') // show error message instead
+  //   }
+  // }
+  <>
+    <h1 className="homepage-header">Welcome</h1>
+    <p className="mb-4">
+      This tool is designed as a free, open-access platform to inform local government and stakeholder
+      decision making on EV and mobility infrastructure investments.
+    </p>
+    <p className="mb-4">
+      The tool enables users to identify &ldquo;priority&rdquo; and &ldquo;feasibility&rdquo; zones within a
+      jurisdiction based on a pixel-grid that integrates multiple data sets into color-coded 100x100 meter
+      pixels, overlaid on the map.
+    </p>
+    <p>Users can:</p>
+    <ul className="list-disc pl-6 mb-4">
+      <li>
+        Modulate the criteria as appropriate to the jurisdiction to identify areas of highest priority for
+        public policy and investment priority
+      </li>
+      <li>
+        Add co-location points to identify community resources where mobility investment should be most
+        desirable within a high-priority zone
+      </li>
+      <li>
+        Download a snapshot of their selections and highlighted coordinates to share with stakeholders and
+        decision makers
+      </li>
+    </ul>
+    <p className="mb-4">
+      For detailed user instructions, see
+      <button
+        // onClick={() => setCurrentView('instructions')}
+        onClick={() => openInNewWindow('/instructions')}
+        className="mx-1 bg-transparent border-none text-primary underline cursor-pointer"
+        type="button"
+      >
+        {/* How to Use */}
+        How to Use
+        <span className="superscript">
+          <Icon fitted size="small" disabled name="external alternate" />
+        </span>
+      </button>
+      . For more information on data and sources, see
+      <button
+        onClick={() => setCurrentView('about')}
+        className="mx-1 bg-transparent border-none text-primary underline cursor-pointer"
+        type="button"
+      >
+        Data
+      </button>
+      .
+    </p>
+    <p className="mb-4">
+      To access the tool, select a county and then a city (or unincorporated areas) from the drop-down menus
+      below.
+    </p>
+    <br />
+    {/* {!isAuthenticated && (
+        <form onSubmit={handlePasswordSubmit} className="flex gap-2">
           <input
             type="password"
-            placeholder="Enter password"
+            placeholder="Enter password to access the map"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="p-2 border rounded"
+            className="p-2 border rounded sm:w-1/2 md:w-1/3"
           />
-          <button type="submit" className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          <Button type="submit" className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
             Submit
-          </button>
+          </Button>
         </form>
-      )}
-      {isAuthenticated && <MapSelector />}
-      <br />
-      <h1 className="homepage-header">Media</h1>
-      <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
-        dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-        aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
-        officia deserunt mollit anim id est laborum.
-      </p>
-      <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
-        dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-        aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
-        officia deserunt mollit anim id est laborum.
-      </p>
-    </>
-  )
-}
+      )} */}
+    {/* {isAuthenticated && (
+        <>
+          <h1 className="homepage-header">Select a jurisdiction</h1>
+          <MapSelector />
+        </>
+    )} */}
+    <h1 className="homepage-header">Select a jurisdiction</h1>
+    <MapSelector />
+    <br />
+    <h1 className="homepage-header">Media</h1>
+    <div className="flex justify-center">
+      <p>&#8212;Coming soon&#8212;</p>
+    </div>
+  </>
+)
 
 export default Default

@@ -19,20 +19,14 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 /* eslint-disable jsx-a11y/label-has-associated-control */
+
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import * as turf from '@turf/turf'
-import { Feature, FeatureCollection, GeoJsonProperties, MultiPolygon, Polygon } from 'geojson'
-import React, { useEffect, useState } from 'react'
-import { useResizeDetector } from 'react-resize-detector'
-import 'react-toggle/style.css'
-
-import MapTopBar from '@components/TopBar'
-
-import { AppConfig } from '@lib/AppConfig'
-import MarkerCategories, { Category } from '@lib/MarkerCategories'
-import { Places } from '@lib/Places'
-
-import ConfigurationPanel from './ConfigurationPanel'
-import { DataControls } from './DataControls'
+import ConfigurationPanel from '@map/ConfigurationPanel'
+import ContextMenu from '@map/ContextMenu'
+import { DataControls } from '@map/DataControls'
 import {
   CenterToMarkerButton,
   CustomMarker,
@@ -40,28 +34,28 @@ import {
   LeafletCluster,
   LeafletMapContainer,
   LocateButton,
-} from './GeoJSONData'
-import MapContextProvider from './MapContextProvider'
-import useLeaflet from './useLeaflet'
-import useLeafletWindow from './useLeafletWindow'
-import useMapContext from './useMapContext'
-import useMarkerData from './useMarkerData'
+} from '@map/GeoJSONData'
+import WelcomeModal from '@map/WelcomeModal'
+import useLeaflet from '@map/useLeaflet'
+import useLeafletWindow from '@map/useLeafletWindow'
+import useMapContext from '@map/useMapContext'
+import useMarkerData from '@map/useMarkerData'
+// import MarkerCategories, { Category } from '@lib/MarkerCategories'
+import { Feature, FeatureCollection, GeoJsonProperties, MultiPolygon, Polygon } from 'geojson'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useResizeDetector } from 'react-resize-detector'
+import 'react-toggle/style.css'
 
+import ColocationPoint from '@components/Map/ColocationPoint'
+import MapNavBar from '@components/MapNavBar'
+
+import { AppConfig } from '@lib/AppConfig'
+import MapProps from '@lib/MapProps'
+import NavBarProps from '@lib/NavBarProps'
+import { Places } from '@lib/Places'
+
+// import { useScreenshot } from 'use-react-screenshot'
 export type Range = [number, number]
-
-interface MapProps {
-  cityConfig: {
-    boundaryUrl: string
-    priorityDataUrl: string
-    feasibleDataUrl: string
-    transitStopsUrl?: string
-    parksAndRecreationUrl?: string
-    healthcareFacilitiesUrl?: string
-    lihtcUrl?: string
-    libraryUrl?: string
-    schoolsUrl?: string
-  }
-}
 
 interface UseLayerGroupEffectParams {
   map: any
@@ -86,7 +80,13 @@ export type DataConfig = {
   togglePgeFilterActive: boolean
 }
 
-const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
+interface MapComponentProps extends NavBarProps {
+  map: any
+  cityConfig: any
+}
+
+// const Map: React.FC<MapComponentProps> = ({ setCurrentView, map, cityConfig }) => {
+const Map: React.FC<NavBarProps> = ({ setCurrentView }) => {
   const [priorityData, setPriorityData] = useState<FeatureCollection<
     Polygon | MultiPolygon,
     GeoJsonProperties
@@ -99,7 +99,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   //   Polygon | MultiPolygon,
   //   GeoJsonProperties
   // > | null>(null) // Added LIHTC data state
-  const { map } = useMapContext()
+  const { map, cityConfig = {} as MapProps } = useMapContext()
   const L = useLeaflet()
   const leafletWindow = useLeafletWindow()
   const {
@@ -119,7 +119,6 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   })
 
   const isLoading = !map || !leafletWindow || !viewportWidth || !viewportHeight
-
   const [showTransitStops, setShowTransitStops] = useState(false)
   const [transitStopsData, setTransitStopsData] = useState<GeoJSONData | null>(null)
   const [showLihtc, setShowLihtc] = useState(false)
@@ -132,7 +131,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   const [parksAndRecreationData, setParksAndRecreationData] = useState<GeoJSONData | null>(null)
   const [showHealthcareFacilities, setShowHealthcareFacilities] = useState(false)
   const [healthcareFacilitiesData, setHealthcareFacilitiesData] = useState<GeoJSONData | null>(null)
-
+  const [openWelcomeModal, setOpenWelcomeModal] = useState(false)
   const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false)
   const [priorityDataConfig, setPriorityDataConfig] = useState<DataConfig>({
     togglePopRange: true,
@@ -162,6 +161,40 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     toggleirs30cFilterActive: true,
     togglePgeFilterActive: true,
   })
+  const [contextMenuVisible, setContextMenuVisible] = useState(false)
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
+  const [clickedLatLng, setClickedLatLng] = useState<L.LatLng | null>(null)
+  // const [image, takeScreenshot] = useScreenshot()
+  // const getImage = () => {
+  //   if (ref.current) {
+  //     takeScreenshot(ref.current).then((img: string) => {
+  //       console.log("Screenshot taken:", ref.current)
+  //       const link = document.createElement('a')
+  //       link.href = img
+  //       link.download = 'map-screensdhot.png'
+  //       link.click()
+  //     }).catch((error: Error) => {
+  //       console.error("Screenshot failed:", error)
+  //     })
+  //   }
+  //   else {console.log("not working")}
+  // }
+  const handleRightClick = (event: React.MouseEvent) => {
+    event.preventDefault()
+    if (map && L) {
+      const latLng = map.mouseEventToLatLng(event.nativeEvent as MouseEvent)
+      setClickedLatLng(latLng)
+    }
+    setMenuPosition({
+      x: event.clientX,
+      y: event.clientY,
+    })
+    setContextMenuVisible(true)
+  }
+
+  const handleClick = () => {
+    setContextMenuVisible(false)
+  }
 
   const cityBoundaryGeoJSON = useEffectFetchCityBoundary()
 
@@ -174,6 +207,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     cityBoundaryGeoJSON,
     simplifiedCityBoundary: null,
   }
+  const ref = useRef<HTMLDivElement>(null)
 
   useEffectSetTransitStopsLayerData()
   useEffectSetParksAndRecreationLayerData()
@@ -190,7 +224,10 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   useEffectLihtc()
   useEffectLibrary()
   useEffectSchool()
-
+  useEffectWelcomeModal()
+  // useEffect(() => {
+  //   if (!L) return
+  // }, [L])
   // useEffectCenterMap()
 
   const mapHtml = (
@@ -234,56 +271,65 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           onDataUpdate={setFeasibleData}
           config={feasibleDataConfig}
         />
-        <br />
         <label>
           <b>Co-location Points</b>
         </label>
         <div className="checkbox-group">
-          <div className="checkbox-column">
-            {/* <label>
-            <input
-              type="checkbox"
-              checked={showTransitStops}
-              onChange={() => setShowTransitStops(!showTransitStops)} />
-            Transit Stops
-          </label> */}
-            <label>
-              <input
-                type="checkbox"
-                checked={showTransitStops}
-                onChange={() => setShowTransitStops(!showTransitStops)}
-              />
-              {/* Transit Stops */}
-              BART stations
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={showParksAndRecreation}
-                onChange={() => setShowParksAndRecreation(!showParksAndRecreation)}
-              />
-              City/County Parks
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={showHealthcareFacilities}
-                onChange={() => setShowHealthcareFacilities(!showHealthcareFacilities)}
-              />
-              Healthcare Facilities
-            </label>
-            <label>
-              <input type="checkbox" checked={showLihtc} onChange={() => setShowLihtc(!showLihtc)} />
-              LIHTC properties
-            </label>
-            <label>
-              <input type="checkbox" checked={showLibrary} onChange={() => setShowLibrary(!showLibrary)} />
-              Public Library
-            </label>
-            <label>
-              <input type="checkbox" checked={showSchool} onChange={() => setShowSchool(!showSchool)} />
-              Public schools
-            </label>
+          <div className="checkbox-column" style={{ width: '340px' }}>
+            <ColocationPoint
+              mainText="Low-income housing"
+              hoverText="Select to show residential multifamily buildings eligible for the federal Low-Income Housing Tax Credit."
+              accordionText="The federal Low-Income Housing Tax Credit is available for residential property owners who set aside a minimum percentage of rental units for tenants at different levels of below-average area income. It is used as an indicator of buildings whose lower-income tenants are most likely to need access to public charging."
+              value={showLihtc}
+              setValue={setShowLihtc}
+              image="https://ev-map.s3.amazonaws.com/icons/home.png"
+              imgAlt="home icon"
+            />
+            <ColocationPoint
+              mainText="Transit stops"
+              hoverText="Select to show commuter rail stations. California rail systems included: ACE, BART, Caltrain, Capitol Corridor, Coaster, LA Metro, Metrolink, SMART."
+              accordionText="Commuter rail stations are potential high-value locations for publicly accessible charging, at station parking lots or surrounding street parking where commuters leave their vehicles before transfering to the train for the second part of a commute. Local bus and trolley networks are not shown."
+              value={showTransitStops}
+              setValue={setShowTransitStops}
+              image="https://ev-map.s3.amazonaws.com/icons/vehicles.png"
+              imgAlt="vehicles icon"
+            />
+            <ColocationPoint
+              mainText="Public libraries"
+              hoverText="Select to show public library locations."
+              accordionText="Public libraries can serve as charging hubs due to their public ownership, community uses, typical length of visit, access by employees and the public, and (often) availability of parking."
+              value={showLibrary}
+              setValue={setShowLibrary}
+              image="https://ev-map.s3.amazonaws.com/icons/library.png"
+              imgAlt="library icon"
+            />
+            <ColocationPoint
+              mainText="Public schools"
+              hoverText="Select to show public school locations."
+              accordionText="Public schools can serve as charging hubs due to their public ownership, community uses, typical length of visit, access by employees and the public, and (often) availability of parking."
+              value={showSchool}
+              setValue={setShowSchool}
+              image="https://ev-map.s3.amazonaws.com/icons/school-bag.png"
+              imgAlt="school-bag icon"
+            />
+            <ColocationPoint
+              mainText="City/county parks"
+              hoverText="Select to show city and county park locations."
+              accordionText="City and county parks can serve as charging hubs due to their public ownership, community uses, typical length of visit, and (often) availability of parking. Regional, state, and national parks are not shown."
+              value={showParksAndRecreation}
+              setValue={setShowParksAndRecreation}
+              image="https://ev-map.s3.amazonaws.com/icons/bench.png"
+              imgAlt="bench icon"
+            />
+            <ColocationPoint
+              mainText="Hospitals"
+              hoverText="Select to show hospitals."
+              accordionText="Hospitals can serve as charging hubs due to their community uses, typical length of visit, access by employees and the public, and availability of parking."
+              value={showHealthcareFacilities}
+              setValue={setShowHealthcareFacilities}
+              image="https://ev-map.s3.amazonaws.com/icons/first-aid-kit.png"
+              imgAlt="first aid icon"
+            />
           </div>
         </div>
         {/* <label>
@@ -306,9 +352,18 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       )} */}
       </div>
       <div className="h-full w-full absolute overflow-hidden" ref={viewportRef}>
-        <MapTopBar />
+        <MapNavBar setCurrentView={setCurrentView} />
+        <ContextMenu
+          contextMenuVisible={contextMenuVisible}
+          setContextMenuVisible={setContextMenuVisible}
+          clickedLatLng={clickedLatLng}
+          menuPosition={menuPosition}
+          // getImage={getImage}
+        />
         <div
           className={`absolute w-full left-0 transition-opacity ${isLoading ? 'opacity-0' : 'opacity-1 '}`}
+          onContextMenu={handleRightClick}
+          onClick={handleClick}
           style={{
             top: AppConfig.ui.topBarHeight,
             width: viewportWidth ?? '100%',
@@ -357,24 +412,46 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       </div>
     </div>
   )
-  return mapHtml
+  // console.log("map called~~")
+  return (
+    <>
+      <WelcomeModal
+        openModal={openWelcomeModal}
+        setOpenModal={setOpenWelcomeModal}
+        city={cityConfig.city}
+        county={cityConfig.county}
+        setCurrentView={setCurrentView}
+      />
+      {mapHtml}
+    </>
+  )
 
   function useEffectFetchCityBoundary(): null {
     const [cityBoundaryGeoJSON, setCityBoundaryGeoJSON] = useState(null)
-
+    // console.log("useEffectFetchCityBoundary called~~", cityConfig)
+    const debounceDelay = 500
+    // useEffect(() => {
+    //   const fetchBoundaryData = async () => {
+    //     const boundaryData = await fetchCityBoundary()
+    //     setCityBoundaryGeoJSON(boundaryData)
+    //   }
+    //   fetchBoundaryData()
+    // }, [cityConfig])
     useEffect(() => {
       const fetchBoundaryData = async () => {
         const boundaryData = await fetchCityBoundary()
         setCityBoundaryGeoJSON(boundaryData)
       }
-
-      fetchBoundaryData()
-    }, [])
-
+      const handler = setTimeout(() => {
+        fetchBoundaryData()
+      }, debounceDelay)
+      return () => clearTimeout(handler)
+    }, [cityConfig])
     return cityBoundaryGeoJSON
   }
 
   async function fetchCityBoundary(): Promise<any> {
+    // console.log("fetchCityBoundary called~~")
     try {
       const cityBoundaryResponse = await fetch(cityConfig.boundaryUrl)
       if (!cityBoundaryResponse.ok) {
@@ -410,6 +487,8 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     }
     tolerance: number
   }): Promise<void> {
+    // console.log("fetchAndFilterLayerData called~~")
+    // const thing = url.toString().slice(25)
     try {
       const response = await fetch(url)
       let dataJson = await response.json()
@@ -425,16 +504,29 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cached.simplifiedCityBoundary = null
         }
       }
-
+      // console.log("&&&&", thing, cached.simplifiedCityBoundary)
       if (cached.simplifiedCityBoundary && cached.simplifiedCityBoundary.geometry) {
+        // dataJson = {
+        //   ...dataJson,
+        //   features: dataJson.features.filter((feature: { geometry: turf.Coord }) =>
+        //     turf.booleanPointInPolygon(feature.geometry, cached.simplifiedCityBoundary!.geometry),
+        //   ),
+        // }
         dataJson = {
           ...dataJson,
-          features: dataJson.features.filter((feature: { geometry: turf.Coord }) =>
-            turf.booleanPointInPolygon(feature.geometry, cached.simplifiedCityBoundary!.geometry),
-          ),
+          features: dataJson.features.filter((feature: { geometry: GeoJSON.Geometry }) => {
+            if (feature.geometry.type === 'Point') {
+              return turf.booleanPointInPolygon(feature.geometry, cached.simplifiedCityBoundary!.geometry)
+            }
+            if (feature.geometry.type === 'Polygon') {
+              return turf.booleanContains(cached.simplifiedCityBoundary!.geometry, feature.geometry)
+              //  turf.booleanOverlap(cityBoundary, feature.geometry)
+            }
+            return false
+          }),
         }
       }
-
+      // console.log("###", thing, dataJson)
       setLayerData(dataJson)
     } catch (error) {
       console.error('Error fetching GeoJSON data:', error)
@@ -442,12 +534,13 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   }
 
   function useEffectCenterMap(): void {
+    // console.log("useEffectCenterMap called~~")
     useEffect(() => {
       if (!map || !L || !cityBoundaryGeoJSON || !cityConfig) return
       const jsonGroup = L.geoJson(cityBoundaryGeoJSON)
       map.fitBounds(jsonGroup.getBounds())
-      // map.zoomIn()
-    }, [allMarkersBoundCenter, map])
+      // }, [allMarkersBoundCenter, map, cityBoundaryGeoJSON])
+    }, [cityBoundaryGeoJSON])
   }
 
   function useLayerGroupEffect({
@@ -457,13 +550,13 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
     layerGroupName,
     iconUrl,
   }: UseLayerGroupEffectParams): void {
+    // console.log("useLayerGroupEffect called~~")
     useEffect(() => {
       if (!map || !data || !L) {
         return
       }
 
       let layerGroup = (map as any)[layerGroupName] as L.LayerGroup | undefined
-
       if (showLayer) {
         const icon = L.icon({
           iconUrl,
@@ -480,7 +573,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
         }
 
         const layer = L.geoJSON(data, {
-          style: { color: '#ff7800', weight: 1, opacity: 1 },
+          style: { color: '#72DD5A', weight: 1, opacity: 1 }, // old color = #ff7800
           pointToLayer(_feature, latlng) {
             return L.marker(latlng, { icon })
           },
@@ -493,9 +586,11 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
         ;(map as any)[layerGroupName] = undefined
       }
     }, [showLayer, data, map, layerGroupName, iconUrl])
+    // }, [showLayer]) // FIXME: doesn't update when new jurisdiction is selected
   }
 
   function useEffectSetParksAndRecreationLayerData() {
+    // console.log("useEffectSetParksAndRecreation called~~")
     useEffect(() => {
       if (cityConfig.parksAndRecreationUrl) {
         fetchAndFilterLayerData({
@@ -503,13 +598,14 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowParksAndRecreation,
           setLayerData: setParksAndRecreationData,
-          tolerance: 0.00001,
+          tolerance: 0.05,
         })
       }
     }, [cityConfig.parksAndRecreationUrl, cityBoundaryGeoJSON])
   }
 
   function useEffectSetHealthcareFacilitiesLayerData() {
+    // console.log("useEffectSetHealthcare called~~")
     useEffect(() => {
       if (cityConfig.healthcareFacilitiesUrl) {
         fetchAndFilterLayerData({
@@ -524,6 +620,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   }
 
   function useEffectSetTransitStopsLayerData() {
+    // console.log("useEffectTransitStops called~~")
     useEffect(() => {
       if (cityConfig.transitStopsUrl) {
         fetchAndFilterLayerData({
@@ -538,6 +635,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   }
 
   function useEffectSetLihtcLayerData() {
+    // console.log("useEffectSetLihtc called~~")
     useEffect(() => {
       if (cityConfig.lihtcUrl) {
         fetchAndFilterLayerData({
@@ -545,13 +643,14 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
           cityBoundaryGeoJSON,
           _setShowLayer: setShowLihtc,
           setLayerData: setLihtcData,
-          tolerance: 0.00001,
+          tolerance: 0.05,
         })
       }
     }, [cityConfig.lihtcUrl, cityBoundaryGeoJSON])
   }
 
   function useEffectSetLibraryLayerData() {
+    // console.log("useEffectSetLibrary called~~")
     useEffect(() => {
       if (cityConfig.libraryUrl) {
         fetchAndFilterLayerData({
@@ -566,6 +665,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
   }
 
   function useEffectSetSchoolLayerData() {
+    // console.log("useEffectSetSchool called~~")
     useEffect(() => {
       if (cityConfig.schoolsUrl) {
         fetchAndFilterLayerData({
@@ -585,7 +685,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       data: transitStopsData,
       showLayer: showTransitStops,
       layerGroupName: 'transitStopsLayerGroup',
-      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/vehicles.png',
+      iconUrl: 'https://ev-map.s3.amazonaws.com/icons/vehicles.png',
     })
   }
 
@@ -595,7 +695,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       data: parksAndRecreationData,
       showLayer: showParksAndRecreation,
       layerGroupName: 'parksAndRecreationLayerGroup',
-      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/bench.png',
+      iconUrl: 'https://ev-map.s3.amazonaws.com/icons/bench.png',
     })
   }
 
@@ -605,7 +705,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       data: healthcareFacilitiesData,
       showLayer: showHealthcareFacilities,
       layerGroupName: 'healthcareFacilitiesLayerGroup',
-      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/first-aid-kit.png',
+      iconUrl: 'https://ev-map.s3.amazonaws.com/icons/first-aid-kit.png',
     })
   }
 
@@ -615,7 +715,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       data: lihtcData,
       showLayer: showLihtc,
       layerGroupName: 'lihtcLayerGroup',
-      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/home.png',
+      iconUrl: 'https://ev-map.s3.amazonaws.com/icons/home.png',
     })
   }
 
@@ -625,7 +725,7 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       data: LibraryData,
       showLayer: showLibrary,
       layerGroupName: 'libraryLayerGroup',
-      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/library.png',
+      iconUrl: 'https://ev-map.s3.amazonaws.com/icons/library.png',
     })
   }
 
@@ -635,15 +735,39 @@ const MapInner = ({ cityConfig }: MapProps): JSX.Element => {
       data: schoolsData,
       showLayer: showSchool,
       layerGroupName: 'schoolLayerGroup',
-      iconUrl: 'https://ev-charging-mapviewer-assets.s3.amazonaws.com/school-bag.png',
+      iconUrl: 'https://ev-map.s3.amazonaws.com/icons/school-bag.png',
     })
+  }
+
+  function useEffectWelcomeModal(): void {
+    // console.log("useEffectWelcomModal called~~")
+    useEffect(() => {
+      const viewedWelcomeModal = sessionStorage.getItem('viewedWelcomeModal')
+      if (!viewedWelcomeModal) {
+        setOpenWelcomeModal(true)
+        sessionStorage.setItem('viewedWelcomeModal', 'true')
+      }
+      const handleUnload = () => {
+        sessionStorage.removeItem('viewedWelcomeModal')
+      }
+      window.addEventListener('beforeunload', handleUnload)
+      return () => {
+        window.removeEventListener('beforeunload', handleUnload)
+      }
+    }, [])
   }
 }
 
-const Map = ({ cityConfig }: MapProps) => (
-  <MapContextProvider>
-    <MapInner cityConfig={cityConfig} />
-  </MapContextProvider>
-)
-
 export default Map
+
+// const MemoizedMap = React.memo(Map)
+
+// // Memoized MapWrapper Component
+// const MapWrapper: React.FC = () => {
+//   const { map, cityConfig } = useMapContext()
+//   console.log("MapWrapper rendered")
+
+//   return <MemoizedMap map={map} cityConfig={cityConfig} setCurrentView={() => {}} />
+// }
+
+// export default React.memo(MapWrapper)

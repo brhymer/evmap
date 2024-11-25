@@ -1,24 +1,27 @@
-import { Leaf } from 'lucide-react'
+// import { Leaf } from 'lucide-react'
 import Head from 'next/head'
-import { useState } from 'react'
 
 import Footer from '@components/common/Footer'
-import Navbar from '@components/common/Navbar'
+import HomeNavBar from '@components/common/HomeNavBar'
 
-import { AppConfig } from '@lib/AppConfig'
-
+// import { AppConfig } from '@lib/AppConfig'
 import About from './about'
 import Contact from './contact'
 import Data from './data'
 import Default from './default'
 import Instructions from './instructions'
 
-const Home = () => {
-  const [currentView, setCurrentView] = useState<string>('home')
+const Home = ({
+  currentView,
+  setCurrentView,
+}: {
+  currentView: string
+  setCurrentView: (view: string) => void
+}) => {
   const renderView = () => {
     switch (currentView) {
       case 'default':
-        return <Default />
+        return <Default setCurrentView={setCurrentView} />
       case 'instructions':
         return <Instructions />
       case 'about':
@@ -28,16 +31,17 @@ const Home = () => {
       case 'contact':
         return <Contact />
       default:
-        return <Default />
+        return <Default setCurrentView={setCurrentView} />
     }
   }
   return (
     <div className="min-h-screen">
       <div className="flex-grow">
         <Head>
-          <title>EV Equity Mapping Platform</title>
-          <meta property="og:title" content="EV Equity Mapping Platform" key="title" />
+          <title>EV Equity Roadmap</title>
+          <meta property="og:title" content="EV Equity Roadmap" key="title" />
           <meta name="description" content="" />
+          <link rel="icon" href="/favicon.ico" />
           {/* <style>{`
             .bullet-list {
               margin-left: 20px;
@@ -57,21 +61,13 @@ const Home = () => {
         {/* <header className="mt-10 items-top gap-4 md:flex" /> */}
         <section>
           <div>
-            <Navbar setCurrentView={setCurrentView} />
+            <HomeNavBar setCurrentView={setCurrentView} />
             <div className="homepage-background">
               <section className="homepage-card sm:mx-8 md:mx-12 lg:mx-16">{renderView()}</section>
             </div>
           </div>
         </section>
-        <Footer />
-        {/* <footer className="mt-16 flex justify-between p-3 rounded bg-light text-sm">
-          This tool is a joint project of UC Berkeley&apos;s Renewable and Appropriate Energy Laboratory and
-          Center for Law, Energy &amp; the Environment (CLEE) as part of CLEE&apos;s EV Equity Initiative. This is
-          a demonstration tool for review and data verification purposes and is not intended for public use. All
-          data acquired from public sources except as noted. Zoning data courtesy of Replica. Lead designers: Ari
-          Ball-Burack and Ankita Suresh Shanbhag. Other research credits: Eleanor Adachi, Radhika Agarwal, Aki
-          Konno. Initial funding provided by UC Berkeley Institute for Transportation studies. 
-        </footer> */}
+        <Footer setCurrentView={setCurrentView} />
         {/* <footer className="mt-16 flex justify-between p-3 rounded bg-light text-sm">
           <div>
             Created by Ankita Shanbhag <br />

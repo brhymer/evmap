@@ -31,15 +31,27 @@ const LayerControl: React.FC<LayerControlProps> = ({ mainText, hoverText, accord
           <Icon name="info circle" />
         </AccordionTitle>
         <AccordionContent className="w-full" active={activeIndex === 0}>
-          <input
-            type="number"
-            // value={inputValue}
-            // onChange={handleInputChange}
-            className="border rounded absolute top-5 right-0 mt-2 mr-2"
-            min={0}
-            max={100}
-          />
           <p className="text-sm" dangerouslySetInnerHTML={{ __html: accordionText }} />
+          {/* <p>
+            Enter range:
+            <input
+              type="number"
+              // value={inputValue}
+              // onChange={handleInputChange}
+              className="border rounded"
+              min={0}
+              max={100}
+            />
+            &nbsp;to&nbsp;
+            <input
+              type="number"
+              // value={inputValue}
+              // onChange={handleInputChange}
+              className="border rounded"
+              min={0}
+              max={100}
+            />
+          </p> */}
         </AccordionContent>
       </div>
     </Accordion>

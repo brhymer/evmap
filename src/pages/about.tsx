@@ -1,4 +1,4 @@
-import Image from 'next/image'
+// import Image from 'next/image'
 import Link from 'next/link'
 
 const About = () => (
@@ -19,7 +19,7 @@ const About = () => (
     <div className="grid grid-cols-12 gap-4">
       <div className="col-span-2">
         <Link className="font-bold" href="https://erg.berkeley.edu/people/kammen-daniel-m/">
-          <Image src="/images/dkammen.png" alt="Example Image" width={100} height={130} />
+          <img src="/images/dkammen.png" alt="Dan Kammen" width={100} height={130} />
         </Link>
       </div>
       <div className="col-span-10 flex flex-col justify-center">
@@ -31,7 +31,7 @@ const About = () => (
       </div>
       <div className="col-span-2">
         <Link className="font-bold" href="https://www.law.berkeley.edu/research/clee/about/people/ted-lamm/">
-          <Image src="/images/tlamm.png" alt="Example Image" width={100} height={130} />
+          <img src="/images/tlamm.png" alt="Ted Lamm" width={100} height={130} />
         </Link>
       </div>
       <div className="col-span-10 flex flex-col justify-center">
@@ -43,7 +43,7 @@ const About = () => (
       </div>
       <div className="col-span-2">
         <Link className="font-bold" href="https://www.law.berkeley.edu/research/clee/about/people/ken-alex/">
-          <Image src="/images/kalex.png" alt="Example Image" width={100} height={130} />
+          <img src="/images/kalex.png" alt="Ken Alex" width={100} height={130} />
         </Link>
       </div>
       <div className="col-span-10 flex flex-col justify-center">

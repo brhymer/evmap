@@ -20,9 +20,11 @@ import { SketchPicker } from 'react-color'
 import Slider from 'react-slider'
 import Toggle from 'react-toggle'
 
-import { Range } from '.'
+import { Range } from '../../pages/map/index'
 import { GeoJSONData, GeoJSONFeature } from './GeoJSONData'
 import LayerControl from './LayerControl'
+
+// import LayerSliderControl from './LayerSliderControl'
 
 interface DataControlsProps {
   dataControlsTitle: string
@@ -126,48 +128,59 @@ export const DataControls: React.FC<DataControlsProps> = ({
 
   const toggleExpand = () => setIsExpanded(!isExpanded)
 
-  function useEffectSetLayerData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
+  function useEffectSetFeatureData(cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null) {
     useEffect(() => {
       const filterData = (
         data: GeoJSONData,
         cityBoundaryGeoJSON: FeatureCollection<Polygon | MultiPolygon> | null,
       ): GeoJSONData => {
         const tolerance = 0.00001 // Adjust for performance vs accuracy
-        const simplifiedCityBoundary = // cityBoundaryGeoJSON
+        const simplifiedCityBoundary =
           cityBoundaryGeoJSON && cityBoundaryGeoJSON.features.length > 0
             ? turf.simplify(cityBoundaryGeoJSON.features[0], { tolerance, highQuality: false })
             : null
-
         return {
           ...data,
           features: data.features.filter((feature: GeoJSONFeature) => {
             const props = feature.properties
-            const withinPropertyCriteria =
-              props.pop >= popRange[0] &&
-              (props.pop <= popRange[1] || popRange[1] === popMax) &&
-              props.CIscoreP >= ciScoreRange[0] &&
-              (props.CIscoreP <= ciScoreRange[1] || ciScoreRange[1] === ciScoreMax) &&
-              props.lev_10000 >= levRange[0] &&
-              (props.lev_10000 <= levRange[1] || levRange[1] === levMax) &&
-              props['Multi-Family Housing Residents'] >= multiFaRange[0] &&
-              (props['Multi-Family Housing Residents'] <= multiFaRange[1] ||
-                multiFaRange[1] === multiFaMax) &&
-              props.Renters >= rentersRange[0] &&
-              (props.Renters <= rentersRange[1] || rentersRange[1] === rentersMax) &&
-              props.zoning_commercial >= commercialRange[0] / 100 &&
-              (props.zoning_commercial <= commercialRange[1] / 100 || commercialRange[1] === commercialMax) &&
-              props.zoning_residential_multi_family >= residentialRange[0] / 100 &&
-              (props.zoning_residential_multi_family <= residentialRange[1] / 100 ||
-                residentialRange[1] === residentialMax) &&
-              props.chg_walk >= walkableRange[0] &&
-              (props.chg_walk <= walkableRange[1] || walkableRange[1] === walkableMax) &&
-              props.chg_drive >= drivableRange[0] &&
-              (props.chg_drive <= drivableRange[1] || drivableRange[1] === drivableMax) &&
-              ((neviFilterActive.zero && props.nevi === 0) || (neviFilterActive.one && props.nevi === 1)) &&
-              ((irs30cFilterActive.zero && props.irs30c === 0) ||
-                (irs30cFilterActive.one && props.irs30c === 1)) &&
-              props.pge >= pgeRange[0] &&
-              (props.pge <= pgeRange[1] || pgeRange[1] === pgeMax)
+            let withinPropertyCriteria
+            if (dataControlsTitle === 'Priority Pixels') {
+              const chg_walk = props.chg_walk ?? props.chg_walk_L2_10 // choose one key name
+              const chg_drive = props.chg_drive ?? props.chg_drive_DCF_10 // choose one key name
+              withinPropertyCriteria =
+                props.pop >= popRange[0] &&
+                (props.pop <= popRange[1] || popRange[1] === popMax) &&
+                props.CIscoreP >= ciScoreRange[0] &&
+                (props.CIscoreP <= ciScoreRange[1] || ciScoreRange[1] === ciScoreMax) &&
+                props.lev_10000 >= levRange[0] &&
+                (props.lev_10000 <= levRange[1] || levRange[1] === levMax) &&
+                props['Multi-Family Housing Residents'] >= multiFaRange[0] &&
+                (props['Multi-Family Housing Residents'] <= multiFaRange[1] ||
+                  multiFaRange[1] === multiFaMax) &&
+                props.Renters >= rentersRange[0] &&
+                (props.Renters <= rentersRange[1] || rentersRange[1] === rentersMax) &&
+                // zoning data has been removed from consideration at this time
+                // props.zoning_commercial >= commercialRange[0] / 100 &&
+                // (props.zoning_commercial <= commercialRange[1] / 100 || commercialRange[1] === commercialMax) &&
+                // props.zoning_residential_multi_family >= residentialRange[0] / 100 &&
+                // (props.zoning_residential_multi_family <= residentialRange[1] / 100 ||
+                //   residentialRange[1] === residentialMax) &&
+                // props.chg_walk >= walkableRange[0] &&
+                // (props.chg_walk <= walkableRange[1] || walkableRange[1] === walkableMax) &&
+                // props.chg_drive >= drivableRange[0] &&
+                // (props.chg_drive <= drivableRange[1] || drivableRange[1] === drivableMax) &&
+                chg_walk >= walkableRange[0] &&
+                (chg_walk <= walkableRange[1] || walkableRange[1] === walkableMax) &&
+                chg_drive >= drivableRange[0] &&
+                (chg_drive <= drivableRange[1] || drivableRange[1] === drivableMax)
+            } else {
+              withinPropertyCriteria =
+                ((neviFilterActive.zero && props.nevi === 0) || (neviFilterActive.one && props.nevi === 1)) &&
+                ((irs30cFilterActive.zero && props.irs30c === 0) ||
+                  (irs30cFilterActive.one && props.irs30c === 1)) &&
+                props.pge >= pgeRange[0] &&
+                (props.pge <= pgeRange[1] || pgeRange[1] === pgeMax)
+            }
             if (!withinPropertyCriteria) {
               return false
             }
@@ -202,7 +215,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
         } catch (error) {
           console.error('Error fetching GeoJSON data:', error)
         } finally {
-          setLoading(false) // Set loading to false after data is fetched
+          setLoading(false)
         }
       }
       fetchAndFilterData()
@@ -261,7 +274,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
     }, [map, L, layerData, showLayerData, layerStyle, dataControlsTitle])
   }
 
-  useEffectSetLayerData(cityBoundaryGeoJSON)
+  useEffectSetFeatureData(cityBoundaryGeoJSON)
   useEffectLayerData()
 
   useEffect(() => {
@@ -273,18 +286,20 @@ export const DataControls: React.FC<DataControlsProps> = ({
 
   if (loading) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          fontSize: '24px',
-          fontWeight: 'bold',
-        }}
-      >
-        Retrieving data...
-      </div>
+      <>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            fontSize: '24px',
+            fontWeight: 'bold',
+          }}
+        >
+          Retrieving data...
+        </div>
+      </>
     )
   }
 
@@ -326,6 +341,27 @@ export const DataControls: React.FC<DataControlsProps> = ({
         </button>
       </div>
       {showLayerData && isExpanded && (
+        // <>
+        //   {/* CI Score Slider */}
+        //   {toggleCiRange && (
+        //     <LayerSliderControl
+        //       mainText='sfd'
+        //       hoverText='sdf'
+        //       accordionText='<p>ioj</p>'
+        //       min={0}
+        //       max={100}
+        //       />
+        //     )}
+        //   {toggleLevRange && (
+        //     <LayerSliderControl
+        //       mainText='sfd2'
+        //       hoverText='sdf'
+        //       accordionText='<p>ioj</p>'
+        //       min={0}
+        //       max={200}
+        //       />
+        //     )}
+        //   </>
         <>
           {/* CI Score Slider */}
           {toggleCiRange && (
@@ -335,53 +371,15 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 mainText="CalEnviroScreen4.0 percentile"
                 hoverText="Slide to adjust the community environmental justice impact score. Higher scores = greater priority."
                 accordionText={`<p>Range: ${ciScoreRange[0]} to ${ciScoreRange[1]}</p> 
-                <p>CalEnviroScreen4.0 is California’s state environmental justice impact screening tool. CES4.0 combines 21 pollution and population-based criteria into a composite score at the census tract level, with percentile rankings based on comparison to statewide averages. More information available <a href="https://oehha.ca.gov/calenviroscreen/report/calenviroscreen-40" className="inline-link">here</a>.</p>`}
+                <p>CalEnviroScreen4.0 is California’s state environmental justice impact screening tool. CES4.0 combines 21 pollution and population-based criteria into a composite score at the census tract level, with percentile rankings based on comparison to statewide averages. More information available <a href="https://oehha.ca.gov/calenviroscreen/report/calenviroscreen-40" class="inline-link">here</a>.</p>`}
               />
               <Slider
                 min={0}
                 max={ciScoreMax}
-                value={ciScoreRange}
-                onAfterChange={setCiScoreRange}
-                thumbClassName="slider-thumb"
-                trackClassName="slider-track"
-                renderThumb={(
-                  props: JSX.IntrinsicAttributes &
-                    React.ClassAttributes<HTMLDivElement> &
-                    React.HTMLAttributes<HTMLDivElement>,
-                  state: {
-                    valueNow:
-                      | string
-                      | number
-                      | boolean
-                      | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-                      | React.ReactFragment
-                      | React.ReactPortal
-                      | null
-                      | undefined
-                  },
-                ) => <div {...props}>{state.valueNow}</div>}
-                pearling
-                minDistance={0}
-              />
-            </label>
-          )}
-          {/* LEV Slider */}
-          {toggleLevRange && (
-            <label>
-              <br />
-              <LayerControl
-                mainText="LEVs/10000"
-                hoverText="Slide to adjust"
-                accordionText={`<p>Range: ${levRange[0]} to ${
-                  levRange[1] === levMax ? '∞' : levRange[1]
-                }</p><p>Placeholder text</p>`}
-              />
-              {/* LEVs/10000: {levRange[0]} to {levRange[1] === levMax ? '∞' : levRange[1]} */}
-              <Slider
-                min={0}
-                max={levMax}
-                value={levRange}
-                onAfterChange={setLevRange}
+                // value={ciScoreRange}
+                // onAfterChange={setCiScoreRange}
+                value={ciScoreRange[0]}
+                onChange={value => setCiScoreRange([value, ciScoreRange[1]])}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -410,17 +408,19 @@ export const DataControls: React.FC<DataControlsProps> = ({
             <label>
               <br />
               <LayerControl
-                mainText="Multifamily residents/pixel"
-                hoverText="Slide to adjust"
+                mainText="Multifamily residents"
+                hoverText="Slide to adjust the number of residents in the pixel who live in multifamily buildings (i.e., apartment, condo)."
                 accordionText={`<p>Range: ${multiFaRange[0]} to ${
                   multiFaRange[1] === multiFaMax ? '∞' : multiFaRange[1]
-                }</p><p>Placeholder text</p>`}
+                }</p><p>Multifamily and renter resident data are estimated based on American Community Survey data for multifamily/renter percentages by census tract and population per pixel. These residents are more likely to rely on public EV charging and mobility infrastructure than are single-family home residents.</p>`}
               />
               <Slider
                 min={0}
                 max={multiFaMax}
-                value={multiFaRange}
-                onAfterChange={setMultiFaRange}
+                // value={multiFaRange}
+                // onAfterChange={setMultiFaRange}
+                value={multiFaRange[0]}
+                onChange={value => setMultiFaRange([value, multiFaRange[1]])}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -449,17 +449,19 @@ export const DataControls: React.FC<DataControlsProps> = ({
             <label>
               <br />
               <LayerControl
-                mainText="Renters/pixel"
-                hoverText="Slide to adjust"
+                mainText="Renters"
+                hoverText="Slide to adjust the number of residents in the pixel who rent their home."
                 accordionText={`<p>Range: ${rentersRange[0]} to ${
                   rentersRange[1] === rentersMax ? '∞' : rentersRange[1]
-                }</p><p>Placeholder text</p>`}
+                }</p><p>Multifamily and renter resident data are estimated based on American Community Survey data for multifamily/renter percentages by census tract and population per pixel. These residents are more likely to rely on public EV charging and mobility infrastructure than are single-family home residents.</p>`}
               />
               <Slider
                 min={0}
                 max={rentersMax}
-                value={rentersRange}
-                onAfterChange={setRentersRange}
+                // value={rentersRange}
+                // onAfterChange={setRentersRange}
+                value={rentersRange[0]}
+                onChange={value => setRentersRange([value, rentersRange[1]])}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -489,16 +491,18 @@ export const DataControls: React.FC<DataControlsProps> = ({
               <br />
               <LayerControl
                 mainText="L2 chargers within 10 min walk"
-                hoverText="Slide to adjust"
+                hoverText="Slide to adjust the number of public Level 2 EV chargers within a 10 minute walk of the pixel. Lower numbers = lower charging access in the pixel."
                 accordionText={`<p>Range: ${walkableRange[0]} to ${
                   walkableRange[1] === walkableMax ? '∞' : walkableRange[1]
-                }</p><p>Placeholder text</p>`}
+                }</p><p>Level 2 and DC Fast access are estimated based on <a href="https://docs.mapbox.com/api/navigation/isochrone/" class="inline-link">MapBox isochrones API</a> (which estimates travel times between specific locations) and <a href="https://afdc.energy.gov/fuels/electricity-locations#/find/nearest?fuel=ELEC" class="inline-link">US Department of Energy current charger data</a>. Walk time is used for Level 2 chargers (which typically take multiple hours to complete a charge) while drive time is used for DC Fast chargers (which typically take 30-60 minutes), reflecting their different use cases.</p>`}
               />
               <Slider
                 min={0}
                 max={walkableMax}
-                value={walkableRange}
-                onAfterChange={setWalkableRange}
+                // value={walkableRange}
+                // onAfterChange={setWalkableRange}
+                value={walkableRange[1]}
+                onChange={value => setWalkableRange([walkableRange[0], value])}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -528,16 +532,18 @@ export const DataControls: React.FC<DataControlsProps> = ({
               <br />
               <LayerControl
                 mainText="DCF chargers within 10 min drive"
-                hoverText="Slide to adjust"
+                hoverText="Slide to adjust the number of public DC Fast chargers within a 10 minute drive of the pixel. Lower numbers = lower charging access in the pixel."
                 accordionText={`<p>Range: ${drivableRange[0]} to ${
                   drivableRange[1] === drivableMax ? '∞' : drivableRange[1]
-                }</p><p>Placeholder text</p>`}
+                }</p><p>Level 2 and DC Fast access are estimated based on <a href="https://docs.mapbox.com/api/navigation/isochrone/" class="inline-link">MapBox isochrones API</a> (which estimates travel times between specific locations) and <a href="https://afdc.energy.gov/fuels/electricity-locations#/find/nearest?fuel=ELEC" class="inline-link">US Department of Energy current charger data</a>. Walk time is used for Level 2 chargers (which typically take multiple hours to complete a charge) while drive time is used for DC Fast chargers (which typically take 30-60 minutes), reflecting their different use cases.</p>`}
               />
               <Slider
                 min={0}
                 max={drivableMax}
-                value={drivableRange}
-                onAfterChange={setDrivableRange}
+                // value={drivableRange}
+                // onAfterChange={setDrivableRange}
+                value={drivableRange[1]}
+                onChange={value => setDrivableRange([drivableRange[0], value])}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -562,7 +568,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
             </label>
           )}
           {/* Population Slider */}
-          {togglePopRange && (
+          {/* {togglePopRange && (
             <label>
               <br />
               <LayerControl
@@ -599,7 +605,7 @@ export const DataControls: React.FC<DataControlsProps> = ({
                 minDistance={0}
               />
             </label>
-          )}
+          )} */}
           {/* Commercial Zoning Slider */}
           {toggleCommercialRange && (
             <label>
@@ -612,8 +618,10 @@ export const DataControls: React.FC<DataControlsProps> = ({
               <Slider
                 min={0}
                 max={commercialMax}
-                value={commercialRange}
-                onAfterChange={setCommercialRange}
+                // value={commercialRange}
+                // onAfterChange={setCommercialRange}
+                value={commercialRange[0]}
+                onChange={value => setCommercialRange([value, commercialRange[1]])}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -649,8 +657,52 @@ export const DataControls: React.FC<DataControlsProps> = ({
               <Slider
                 min={0}
                 max={residentialMax}
-                value={residentialRange}
-                onAfterChange={setResidentialRange}
+                // value={residentialRange}
+                // onAfterChange={setResidentialRange}
+                value={residentialRange[0]}
+                onChange={value => setResidentialRange([value, residentialRange[1]])}
+                thumbClassName="slider-thumb"
+                trackClassName="slider-track"
+                renderThumb={(
+                  props: JSX.IntrinsicAttributes &
+                    React.ClassAttributes<HTMLDivElement> &
+                    React.HTMLAttributes<HTMLDivElement>,
+                  state: {
+                    valueNow:
+                      | string
+                      | number
+                      | boolean
+                      | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+                      | React.ReactFragment
+                      | React.ReactPortal
+                      | null
+                      | undefined
+                  },
+                ) => <div {...props}>{state.valueNow}</div>}
+                pearling
+                minDistance={0}
+              />
+            </label>
+          )}
+          {/* LEV Slider */}
+          {toggleLevRange && (
+            <label>
+              <br />
+              <LayerControl
+                mainText="Registered LEVs"
+                hoverText="Slide to adjust the number of low-emitting vehicles (EVs and hydrogen fuel-cell) registered in the census tract."
+                accordionText={`<p>Range: ${levRange[0]} to ${
+                  levRange[1] === levMax ? '∞' : levRange[1]
+                }</p><p>Higher LEV registrations in an area indicate a greater need for charging today but also suggest a higher early adopter rate–thus, likely greater access to at-home charging and lower need for equity prioritization.</p>`}
+              />
+              {/* LEVs/10000: {levRange[0]} to {levRange[1] === levMax ? '∞' : levRange[1]} */}
+              <Slider
+                min={0}
+                max={levMax}
+                // value={levRange}
+                value={levRange[1]}
+                onChange={value => setLevRange([levRange[0], value])}
+                // onAfterChange={setLevRange}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -679,17 +731,19 @@ export const DataControls: React.FC<DataControlsProps> = ({
             <label>
               <br />
               <LayerControl
-                mainText="PG&E load capacity through pixel (kW)"
-                hoverText="Slide to adjust"
+                mainText="Electric grid load capacity (kW)"
+                hoverText="Slide to adjust the available capacity on the electrical distribution grid through the pixel. Higher numbers = more capacity to install EV chargers."
                 accordionText={`<p>Range: ${pgeRange[0]} to ${
                   pgeRange[1] === pgeMax ? '∞' : pgeRange[1]
-                }</p><p>Placeholder text</p>`}
+                }</p><p>Load capacity is based on the capacity map provided by the electric utility that serves the jurisdiction, <a href="https://www.energy.gov/eere/us-atlas-electric-distribution-system-hosting-capacity-maps">where available</a>. Energy requirements vary widely, but 100 kW of capacity is typically needed to support 5-10 Level 2 chargers or 1 DC Fast charger.</p>`}
               />
               <Slider
                 min={0}
                 max={pgeMax}
-                value={pgeRange}
-                onAfterChange={setPgeRange}
+                // value={pgeRange}
+                // onAfterChange={setPgeRange}
+                value={pgeRange[0]}
+                onChange={value => setPgeRange([value, pgeRange[1]])}
                 thumbClassName="slider-thumb"
                 trackClassName="slider-track"
                 renderThumb={(
@@ -715,49 +769,56 @@ export const DataControls: React.FC<DataControlsProps> = ({
           )}
           <br />
           {toggleNeviFilterActive && (
-            <div className="checkbox-group">
+            <div className="checkbox-group justify-between">
               {/* NEVI Checkboxes */}
-              <div className="checkbox-column">
-                <br />
-                <label style={{ display: 'flex', alignItems: 'center' }}>
-                  <Toggle
-                    checked={neviFilterActive.one && !neviFilterActive.zero}
-                    onChange={() => {
-                      const currentlyShowingOnlyOne = neviFilterActive.one && !neviFilterActive.zero
-                      if (currentlyShowingOnlyOne) {
-                        setNeviFilterActive({ zero: true, one: true })
-                      } else {
-                        setNeviFilterActive({ zero: false, one: true })
-                      }
-                    }}
-                    icons={false}
-                  />
-                  <span style={{ marginLeft: '20px' }}>NEVI Eligible</span>
-                </label>
-              </div>
+              <br />
+              <label style={{ marginRight: '20px' }}>
+                <Toggle
+                  checked={neviFilterActive.one && !neviFilterActive.zero}
+                  onChange={() => {
+                    const currentlyShowingOnlyOne = neviFilterActive.one && !neviFilterActive.zero
+                    if (currentlyShowingOnlyOne) {
+                      setNeviFilterActive({ zero: true, one: true })
+                    } else {
+                      setNeviFilterActive({ zero: false, one: true })
+                    }
+                  }}
+                  icons={false}
+                />
+              </label>
+              <LayerControl
+                mainText="NEVI Eligible"
+                hoverText="Toggle to show pixels in areas that are eligible for grant funding through the National Electric Vehicle Infrastructure program, which funds EV chargers within 1 mile of designated highways."
+                accordionText={`<p>Range: On or Off
+                </p><p>NEVI funding is generally intended to support a connected national highway charging network, as opposed to community-based local charging. It is thus largely focused on high-speed DC Fast charging to serve long trips. <a href="https://driveelectric.gov/corridors">USDOE provides more information</a> and to see the designated Alternative Fuel Corridors and state plans.</p>`}
+              />
             </div>
           )}
           {toggleirs30cFilterActive && (
-            <div className="checkbox-group">
+            <div className="checkbox-group justify-between">
               {/* IRS Checkboxes */}
-              <div className="checkbox-column">
-                <br />
-                <label style={{ display: 'flex', alignItems: 'center' }}>
-                  <Toggle
-                    checked={irs30cFilterActive.one && !irs30cFilterActive.zero}
-                    onChange={() => {
-                      const currentlyShowingOnlyOne = irs30cFilterActive.one && !irs30cFilterActive.zero
-                      if (currentlyShowingOnlyOne) {
-                        setIrs30cFilterActive({ zero: true, one: true })
-                      } else {
-                        setIrs30cFilterActive({ zero: false, one: true })
-                      }
-                    }}
-                    icons={false}
-                  />
-                  <span style={{ marginLeft: '20px' }}>IRS 30C Eligible</span>
-                </label>
-              </div>
+              <br />
+              <label style={{ marginRight: '20px' }}>
+                <Toggle
+                  checked={irs30cFilterActive.one && !irs30cFilterActive.zero}
+                  onChange={() => {
+                    const currentlyShowingOnlyOne = irs30cFilterActive.one && !irs30cFilterActive.zero
+                    if (currentlyShowingOnlyOne) {
+                      setIrs30cFilterActive({ zero: true, one: true })
+                    } else {
+                      setIrs30cFilterActive({ zero: false, one: true })
+                    }
+                  }}
+                  icons={false}
+                />
+                {/* <span style={{ marginLeft: '20px' }}>IRS 30C Eligible</span> */}
+              </label>
+              <LayerControl
+                mainText="IRS 30C eligible"
+                hoverText="Toggle to show pixels in areas that are eligible for federal tax credits for EV charger installation, limited to communities designated either low-income or non-urban."
+                accordionText={`<p>Range: On or Off
+                </p><p>The IRS 30C Alternative Fuel Vehicle Refueling Property Credit provides generous tax credits for installations by individuals, businesses, nonprofits, and governments in qualifying areas. <a class="inline-link" href="https://www.irs.gov/credits-deductions/alternative-fuel-vehicle-refueling-property-credit">IRS provides more information</a> on eligibility and procedures.</p><p>The <a class="inline-link" href="https://cleanenergytaxnavigator.org/">Clean Energy Tax Navigator</a> is a free tool to help identify available credits including 30C.</p>`}
+              />
             </div>
           )}
         </>

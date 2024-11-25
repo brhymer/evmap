@@ -8,3 +8,4 @@ prettier.config.js
 
 src/components/deprecated
 src/pages/deprecated
+src/deprecated_pages
